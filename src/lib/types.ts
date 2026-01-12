@@ -106,3 +106,47 @@ export interface CommonItem {
   defaultLocation: StorageLocation;
   typicalFreshnessDays?: number;
 }
+
+// =============================================================================
+// Voice Input Types
+// =============================================================================
+
+export type VoiceState = 'idle' | 'recording' | 'transcribing' | 'confirming' | 'error';
+
+export type VoiceIntent = 'add_items' | 'remove_items' | 'create_pattern' | 'edit_pattern' | 'unknown';
+
+export interface ParsedItem {
+  name: string;
+  category: IngredientCategory;
+  location: StorageLocation;
+  quantity: QuantityLevel;
+  confidence: number;
+  ambiguous: boolean;
+  alternatives?: string[];
+}
+
+export interface ParsedPattern {
+  name?: string;
+  targetPattern?: string;
+  addIngredients?: string[];
+  removeIngredients?: string[];
+}
+
+export interface ParsedVoiceInput {
+  intent: VoiceIntent;
+  confidence: number;
+  items?: ParsedItem[];
+  pattern?: ParsedPattern;
+  extractedLocation?: StorageLocation;
+  raw: string;
+}
+
+export interface VoiceRecordingResult {
+  audioBlob: Blob;
+  durationMs: number;
+}
+
+export interface TranscriptionResult {
+  text: string;
+  confidence?: number;
+}
