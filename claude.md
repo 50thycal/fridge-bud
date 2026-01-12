@@ -171,17 +171,20 @@ This is a **shared terminal**, not a personal app:
 - The iPad on the fridge IS the source of truth
 - Future: companion phone apps are read-only or send "requests"
 
-## Tech Stack
+## Tech Stack (Decided)
 
-**Primary (iPad-first):**
-- SwiftUI for UI (native iPad experience, 120Hz, widgets)
-- SwiftData for local persistence (offline-first)
-- CloudKit for sync (zero backend, family sharing built-in)
+**Web App (PWA) deployed on Vercel:**
+- Next.js with TypeScript
+- Tailwind CSS for styling (large touch targets, glanceable UI)
+- Local storage (IndexedDB) for offline-first data
+- Vercel KV for cross-device sync
+- PWA manifest for full-screen iPad installation
 
-**Alternative (if cross-platform needed):**
-- React Native + Expo
-- SQLite for local storage
-- PowerSync for sync
+**Architecture:**
+- iPad is source of truth, writes to local storage + syncs to Vercel KV
+- Phones read from Vercel KV (read-only in MVP)
+- No accounts, no auth - single household code
+- Manual JSON export for backup
 
 ## Freshness Tracking Approach
 
@@ -193,40 +196,62 @@ This is a **shared terminal**, not a personal app:
 
 This reduces burden while maintaining useful accuracy.
 
-## Open Questions
+## Resolved Decisions
 
-These need resolution as we build:
+1. **Item entry**: Two-lane system
+   - Lane A (fast): Predefined common items + recently used, one-tap add
+   - Lane B (fallback): Free text for unusual items
+   - NOT doing: barcode, camera, voice (future maybe)
 
-1. **Item entry**: Voice? Camera? Predefined list? Barcode scan?
-2. **Pattern curation**: Build from scratch vs. customize defaults?
-3. **Portion tracking**: "How much chicken" vs just "we have chicken"?
-4. **Leftover handling**: Is "leftovers" a meal pattern?
-5. **External meals**: How to log "ate out" or "ordered in"?
+2. **Pattern curation**: Hybrid - ship with 15-25 defaults, users can customize later
+
+3. **Data granularity**: Medium - quantity (plenty/some/low) + confidence (sure/unsure)
+
+4. **Sync strategy**: Vercel KV with household code, iPad writes, phones read
+
+5. **Backup**: Manual JSON export included in MVP
+
+## MVP Scope
+
+### In Scope
+- Inventory tracking (fridge + pantry as zones)
+- Meal pattern matching
+- Derived grocery list
+- Phone viewing via shared household code
+- Manual data export/backup
+
+### Out of Scope (explicitly)
+- Nutrition/calorie/macro tracking
+- Recipe instructions
+- User accounts or auth
+- Push notifications
+- AI suggestions
+- Multi-household support
+- Weekly constraints (Phase 2)
 
 ## Implementation Phases
 
-### Phase 1: Core Loop
+### Phase 1: Core Loop (MVP)
+- Project setup (Next.js, Tailwind, PWA config)
+- Data layer (local storage + Vercel KV sync)
 - Inventory CRUD with freshness states
-- 10-15 default meal patterns
-- Basic opportunity calculator
-- Simple grocery list derivation
+- Dummy meal patterns (15-20)
+- Basic meal opportunity matching
+- Derived grocery list
+- Manual JSON export
+- Phone read-only view
 
-### Phase 2: Constraints & Planning
+### Phase 2: Constraints & Planning (Post-MVP)
 - Weekly constraint system
 - Constraint-aware scoring
 - Meal logging
 - Week-at-a-glance view
 
-### Phase 3: Polish & Habits
+### Phase 3: Polish & Habits (Future)
 - Freshness prompting system
 - Smart grocery suggestions
-- iPadOS widgets
-- Kiosk mode setup
-
-### Phase 4: Multi-Device
-- CloudKit shared database
-- iPhone companion app
-- Web dashboard (optional)
+- Pattern creation UI
+- Kiosk mode optimization
 
 ## Guiding Principles for Development
 
