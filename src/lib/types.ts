@@ -112,7 +112,7 @@ export interface CommonItem {
 // Voice Input Types
 // =============================================================================
 
-export type VoiceState = 'idle' | 'recording' | 'transcribing' | 'confirming' | 'error';
+export type VoiceState = 'idle' | 'recording' | 'transcribing' | 'parsing' | 'reviewing' | 'error';
 
 export type VoiceIntent = 'add_items' | 'remove_items' | 'create_pattern' | 'edit_pattern' | 'unknown';
 
@@ -150,4 +150,39 @@ export interface VoiceRecordingResult {
 export interface TranscriptionResult {
   text: string;
   confidence?: number;
+}
+
+// =============================================================================
+// LLM Parsing Types
+// =============================================================================
+
+export interface LLMParsedItem {
+  name: string;
+  matchedKnownItem: string | null;
+  category: IngredientCategory;
+  location: StorageLocation;
+  quantity: QuantityLevel;
+  confidence: number;
+  possibleDuplicate: boolean;
+  duplicateItemId: string | null;
+  reasoning: string;
+  locationOverridden: boolean;
+  originalLocation?: StorageLocation;
+}
+
+export interface LLMParseResult {
+  intent: VoiceIntent;
+  confidence: number;
+  items: LLMParsedItem[];
+  extractedLocation: StorageLocation | null;
+  warnings: string[];
+  raw: string;
+}
+
+export type DuplicateAction = 'add' | 'update_quantity' | 'skip';
+
+export interface ReviewableItem extends LLMParsedItem {
+  id: string; // temporary id for tracking in review UI
+  selected: boolean;
+  duplicateAction?: DuplicateAction;
 }

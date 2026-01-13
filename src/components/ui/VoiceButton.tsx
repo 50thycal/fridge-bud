@@ -30,7 +30,7 @@ export function VoiceButton({
   };
 
   const isRecording = state === 'recording';
-  const isTranscribing = state === 'transcribing';
+  const isProcessing = state === 'transcribing' || state === 'parsing';
   const isError = state === 'error';
 
   // Format elapsed time as seconds
@@ -40,7 +40,7 @@ export function VoiceButton({
   return (
     <button
       onClick={onClick}
-      disabled={disabled || isTranscribing}
+      disabled={disabled || isProcessing}
       className={`
         ${sizes[size]}
         relative rounded-full
@@ -50,7 +50,7 @@ export function VoiceButton({
         disabled:opacity-50 disabled:cursor-not-allowed
         ${isRecording
           ? 'bg-red-500 hover:bg-red-400 shadow-lg shadow-red-500/30'
-          : isTranscribing
+          : isProcessing
             ? 'bg-yellow-500 cursor-wait'
             : isError
               ? 'bg-red-800 hover:bg-red-700'
@@ -60,8 +60,8 @@ export function VoiceButton({
       aria-label={
         isRecording
           ? 'Stop recording'
-          : isTranscribing
-            ? 'Transcribing...'
+          : isProcessing
+            ? 'Processing...'
             : 'Start voice input'
       }
     >
@@ -70,8 +70,8 @@ export function VoiceButton({
         <span className="absolute inset-0 rounded-full animate-ping bg-red-400 opacity-30" />
       )}
 
-      {/* Transcribing spinner */}
-      {isTranscribing && (
+      {/* Processing spinner */}
+      {isProcessing && (
         <span className="absolute inset-0 rounded-full border-2 border-yellow-300 border-t-transparent animate-spin" />
       )}
 
@@ -85,7 +85,7 @@ export function VoiceButton({
         >
           <rect x="6" y="6" width="12" height="12" rx="2" />
         </svg>
-      ) : isTranscribing ? (
+      ) : isProcessing ? (
         // Processing dots
         <span className="flex gap-1">
           <span className="w-1.5 h-1.5 bg-white rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
@@ -140,12 +140,12 @@ export function VoiceMiniButton({
   disabled = false,
 }: VoiceMiniButtonProps) {
   const isRecording = state === 'recording';
-  const isTranscribing = state === 'transcribing';
+  const isProcessing = state === 'transcribing' || state === 'parsing';
 
   return (
     <button
       onClick={onClick}
-      disabled={disabled || isTranscribing}
+      disabled={disabled || isProcessing}
       className={`
         w-12 h-12
         -mt-4
@@ -157,7 +157,7 @@ export function VoiceMiniButton({
         shadow-lg
         ${isRecording
           ? 'bg-red-500 shadow-red-500/30'
-          : isTranscribing
+          : isProcessing
             ? 'bg-yellow-500'
             : 'bg-green-600 hover:bg-green-500 shadow-green-600/30'
         }
@@ -165,8 +165,8 @@ export function VoiceMiniButton({
       aria-label={
         isRecording
           ? 'Stop recording'
-          : isTranscribing
-            ? 'Transcribing...'
+          : isProcessing
+            ? 'Processing...'
             : 'Voice input'
       }
     >
@@ -175,8 +175,8 @@ export function VoiceMiniButton({
         <span className="absolute inset-0 rounded-full animate-ping bg-red-400 opacity-30" />
       )}
 
-      {/* Transcribing spinner */}
-      {isTranscribing && (
+      {/* Processing spinner */}
+      {isProcessing && (
         <span className="absolute inset-0 rounded-full border-2 border-yellow-300 border-t-transparent animate-spin" />
       )}
 
@@ -185,7 +185,7 @@ export function VoiceMiniButton({
         <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 24 24">
           <rect x="6" y="6" width="12" height="12" rx="2" />
         </svg>
-      ) : isTranscribing ? (
+      ) : isProcessing ? (
         <span className="flex gap-0.5">
           <span className="w-1 h-1 bg-white rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
           <span className="w-1 h-1 bg-white rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />

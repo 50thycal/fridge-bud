@@ -5,9 +5,10 @@ import { usePathname } from 'next/navigation';
 import { useVoiceInput } from '@/hooks/useVoiceInput';
 import { useInventory } from '@/hooks/useInventory';
 import { VoiceMiniButton } from './VoiceButton';
-import { VoiceConfirmation, RecordingOverlay } from './VoiceConfirmation';
+import { RecordingOverlay } from './VoiceConfirmation';
+import { VoiceReview, ProcessingOverlay } from './VoiceReview';
 import { getRecentItemNames } from '@/lib/storage';
-import { ParsedVoiceInput } from '@/lib/types';
+import { ReviewableItem, LLMParseResult } from '@/lib/types';
 
 const leftNavItems = [
   { href: '/', label: 'Home', icon: HomeIcon },
@@ -21,7 +22,7 @@ const rightNavItems = [
 
 export function BottomNav() {
   const pathname = usePathname();
-  const { items, add, remove } = useInventory();
+  const { items, add, update, remove } = useInventory();
 
   const {
     state,
@@ -31,48 +32,59 @@ export function BottomNav() {
     startRecording,
     stopRecording,
     cancelRecording,
-    confirmResult,
     clearResult,
     isSupported,
   } = useVoiceInput({
     recentItems: getRecentItemNames(),
-    onResult: handleVoiceResult,
+    currentInventory: items,
     onError: (err) => console.error('Voice error:', err),
   });
 
-  function handleVoiceResult(result: ParsedVoiceInput) {
-    if (!result.items || result.items.length === 0) return;
+  function handleVoiceConfirm(reviewedItems: ReviewableItem[]) {
+    if (parsedResult?.intent === 'add_items') {
+      reviewedItems.forEach(item => {
+        if (item.possibleDuplicate && item.duplicateAction === 'skip') {
+          // User chose to skip this duplicate
+          return;
+        }
 
-    switch (result.intent) {
-      case 'add_items':
-        result.items.forEach(item => {
-          add({
-            name: item.name,
-            category: item.category,
-            location: item.location,
-            quantity: item.quantity,
-            freshness: 'fresh',
-            confidence: item.confidence >= 0.8 ? 'sure' : 'unsure',
-          });
-        });
-        break;
-
-      case 'remove_items':
-        result.items.forEach(parsedItem => {
-          // Find existing item by name (case-insensitive)
-          const existingItem = items.find(
-            inv => inv.name.toLowerCase() === parsedItem.name.toLowerCase()
-          );
+        if (item.possibleDuplicate && item.duplicateAction === 'update_quantity' && item.duplicateItemId) {
+          // User chose to update existing item's quantity
+          const existingItem = items.find(inv => inv.id === item.duplicateItemId);
           if (existingItem) {
-            remove(existingItem.id);
+            // Bump quantity to "plenty" since they're restocking
+            update(item.duplicateItemId, {
+              quantity: 'plenty',
+              freshness: 'fresh',
+              updatedAt: Date.now(),
+            });
           }
-        });
-        break;
+          return;
+        }
 
-      // TODO: Handle create_pattern and edit_pattern
-      default:
-        console.log('Unhandled intent:', result.intent);
+        // Add as new item (either not a duplicate, or user chose to add anyway)
+        add({
+          name: item.name,
+          category: item.category,
+          location: item.location,
+          quantity: item.quantity,
+          freshness: 'fresh',
+          confidence: item.confidence >= 0.8 ? 'sure' : 'unsure',
+        });
+      });
+    } else if (parsedResult?.intent === 'remove_items') {
+      reviewedItems.forEach(reviewedItem => {
+        // Find existing item by name (case-insensitive)
+        const existingItem = items.find(
+          inv => inv.name.toLowerCase() === reviewedItem.name.toLowerCase()
+        );
+        if (existingItem) {
+          remove(existingItem.id);
+        }
+      });
     }
+
+    clearResult();
   }
 
   function handleMicClick() {
@@ -81,12 +93,6 @@ export function BottomNav() {
     } else if (state === 'idle' || state === 'error') {
       startRecording();
     }
-  }
-
-  function handleEdit() {
-    // TODO: Open an edit sheet with the parsed items
-    // For now, just confirm
-    confirmResult();
   }
 
   return (
@@ -100,12 +106,16 @@ export function BottomNav() {
         />
       )}
 
-      {/* Confirmation Overlay */}
-      {state === 'confirming' && parsedResult && (
-        <VoiceConfirmation
+      {/* Transcribing/Parsing Overlay */}
+      {(state === 'transcribing' || state === 'parsing') && (
+        <ProcessingOverlay />
+      )}
+
+      {/* Review Overlay */}
+      {state === 'reviewing' && parsedResult && (
+        <VoiceReview
           result={parsedResult}
-          onConfirm={confirmResult}
-          onEdit={handleEdit}
+          onConfirm={handleVoiceConfirm}
           onCancel={clearResult}
         />
       )}
@@ -151,7 +161,7 @@ export function BottomNav() {
               <VoiceMiniButton
                 state={state}
                 onClick={handleMicClick}
-                disabled={state === 'transcribing'}
+                disabled={state === 'transcribing' || state === 'parsing'}
               />
             ) : (
               <div className="w-12 h-12 -mt-4 rounded-full bg-zinc-700 flex items-center justify-center opacity-50">
