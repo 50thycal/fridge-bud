@@ -9,16 +9,29 @@ interface SyncSheetProps {
 }
 
 export function SyncSheet({ onClose }: SyncSheetProps) {
-  const { householdCode, syncStatus, lastSynced, error, isConnected, create, join, sync, disconnect } = useSync();
+  const { householdCode, householdName, syncStatus, lastSynced, error, isConnected, create, join, sync, disconnect, updateName } = useSync();
   const [joinCode, setJoinCode] = useState('');
+  const [newName, setNewName] = useState('');
   const [isJoining, setIsJoining] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
   const [showJoinInput, setShowJoinInput] = useState(false);
+  const [showCreateInput, setShowCreateInput] = useState(false);
+  const [isEditingName, setIsEditingName] = useState(false);
+  const [editName, setEditName] = useState('');
 
   const handleCreate = async () => {
     setIsCreating(true);
-    await create();
+    await create(newName || undefined);
     setIsCreating(false);
+    setShowCreateInput(false);
+    setNewName('');
+  };
+
+  const handleSaveName = async () => {
+    if (editName.trim()) {
+      await updateName(editName.trim());
+    }
+    setIsEditingName(false);
   };
 
   const handleJoin = async () => {
@@ -61,6 +74,46 @@ export function SyncSheet({ onClose }: SyncSheetProps) {
         {isConnected ? (
           // Connected state
           <div className="space-y-6">
+            {/* Household Name */}
+            <div className="bg-zinc-800 rounded-xl p-4">
+              {isEditingName ? (
+                <div className="space-y-3">
+                  <input
+                    type="text"
+                    value={editName}
+                    onChange={(e) => setEditName(e.target.value)}
+                    placeholder="Enter household name"
+                    className="w-full bg-zinc-700 border border-zinc-600 rounded-lg px-3 py-2 text-white placeholder-zinc-500 focus:outline-none focus:border-green-500"
+                    autoFocus
+                  />
+                  <div className="flex gap-2">
+                    <Button onClick={() => setIsEditingName(false)} variant="secondary" size="sm" className="flex-1">
+                      Cancel
+                    </Button>
+                    <Button onClick={handleSaveName} size="sm" className="flex-1">
+                      Save
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <div
+                  className="flex items-center justify-between cursor-pointer hover:bg-zinc-700/50 -m-2 p-2 rounded-lg transition-colors"
+                  onClick={() => {
+                    setEditName(householdName || '');
+                    setIsEditingName(true);
+                  }}
+                >
+                  <div>
+                    <p className="text-zinc-400 text-sm">Household name</p>
+                    <p className="text-xl font-semibold text-white">
+                      {householdName || 'Tap to add name'}
+                    </p>
+                  </div>
+                  <span className="text-zinc-500 text-sm">Edit</span>
+                </div>
+              )}
+            </div>
+
             {/* Status */}
             <div className="bg-zinc-800 rounded-xl p-4">
               <div className="flex items-center justify-between mb-3">
@@ -116,7 +169,35 @@ export function SyncSheet({ onClose }: SyncSheetProps) {
               </div>
             )}
 
-            {showJoinInput ? (
+            {showCreateInput ? (
+              // Create new household with name
+              <div className="space-y-4">
+                <div>
+                  <label className="text-zinc-400 text-sm mb-2 block">Name your household</label>
+                  <input
+                    type="text"
+                    value={newName}
+                    onChange={(e) => setNewName(e.target.value)}
+                    placeholder="e.g., Cal's Kitchen"
+                    className="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-4 py-3 text-white placeholder-zinc-600 focus:outline-none focus:border-green-500"
+                    autoFocus
+                  />
+                  <p className="text-zinc-500 text-sm mt-2">Optional - you can add this later</p>
+                </div>
+                <div className="flex gap-3">
+                  <Button onClick={() => { setShowCreateInput(false); setNewName(''); }} variant="secondary" className="flex-1">
+                    Back
+                  </Button>
+                  <Button
+                    onClick={handleCreate}
+                    disabled={isCreating}
+                    className="flex-1"
+                  >
+                    {isCreating ? 'Creating...' : 'Create'}
+                  </Button>
+                </div>
+              </div>
+            ) : showJoinInput ? (
               // Join existing household
               <div className="space-y-4">
                 <div>
@@ -146,8 +227,8 @@ export function SyncSheet({ onClose }: SyncSheetProps) {
             ) : (
               // Initial options
               <div className="space-y-3">
-                <Button onClick={handleCreate} className="w-full" disabled={isCreating}>
-                  {isCreating ? 'Creating...' : 'Create New Household'}
+                <Button onClick={() => setShowCreateInput(true)} className="w-full">
+                  Create New Household
                 </Button>
                 <Button onClick={() => setShowJoinInput(true)} variant="secondary" className="w-full">
                   Join Existing Household
