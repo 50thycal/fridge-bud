@@ -41,9 +41,12 @@ export interface ParsedVoiceInput {
 
 const INTENT_TRIGGERS: Record<VoiceIntent, string[]> = {
   add_items: [
+    // Simple starts (will check if sentence starts with these)
+    'add', 'adding',
     // General add
     'bought', 'picked up', 'got', 'added', 'have', 'restocked',
     'brought home', 'just got', 'grabbed', 'stocked up on',
+    'put', 'putting', 'store', 'storing',
     // Location-specific add
     'add to fridge', 'add to freezer', 'add to pantry',
     'put in fridge', 'put in freezer', 'put in pantry',
@@ -52,19 +55,25 @@ const INTENT_TRIGGERS: Record<VoiceIntent, string[]> = {
     'fridge has', 'freezer has', 'pantry has',
     'add to the fridge', 'add to the freezer', 'add to the pantry',
     'put in the fridge', 'put in the freezer', 'put in the pantry',
+    'to the fridge', 'to the freezer', 'to the pantry',
+    'to our fridge', 'to our freezer', 'to our pantry',
+    'to my fridge', 'to my freezer', 'to my pantry',
+    'in the fridge', 'in the freezer', 'in the pantry',
+    'in our fridge', 'in our freezer', 'in our pantry',
   ],
 
   remove_items: [
     // General remove
     'used', 'used up', 'finished', 'threw out', 'tossed',
     'gone', 'out of', 'ran out', 'expired', 'bad', 'eaten',
+    'remove', 'removing', 'take out', 'took out',
     // Location-specific remove
     'remove from fridge', 'remove from freezer', 'remove from pantry',
     'take out of fridge', 'take out of freezer', 'take out of pantry',
     'took from fridge', 'took from freezer', 'took from pantry',
     'grab from fridge', 'grab from freezer', 'grab from pantry',
     'remove from the fridge', 'remove from the freezer', 'remove from the pantry',
-    'no more', 'all out of', 'none left',
+    'no more', 'all out of', 'none left', 'ran out of',
   ],
 
   create_pattern: [
@@ -211,6 +220,8 @@ function extractQuantity(text: string): QuantityLevel {
  */
 function detectIntent(text: string): { intent: VoiceIntent; confidence: number } {
   const normalized = normalize(text);
+  const words = normalized.split(' ');
+  const firstWord = words[0] || '';
 
   // Check each intent's triggers
   const scores: Record<VoiceIntent, number> = {
@@ -225,11 +236,36 @@ function detectIntent(text: string): { intent: VoiceIntent; confidence: number }
     if (intent === 'unknown') continue;
 
     for (const trigger of triggers) {
-      if (normalized.includes(trigger)) {
+      // Check if sentence starts with trigger (high confidence)
+      if (normalized.startsWith(trigger + ' ') || normalized === trigger) {
+        scores[intent as VoiceIntent] += 3 + trigger.split(' ').length;
+      }
+      // Check if trigger appears anywhere
+      else if (normalized.includes(trigger)) {
         // Longer triggers get higher scores (more specific)
         scores[intent as VoiceIntent] += trigger.split(' ').length;
       }
     }
+  }
+
+  // Boost add_items if we see location words with "to" or "in"
+  const hasAddLocation = /\b(to|in)\s+(the\s+|our\s+|my\s+)?(fridge|freezer|pantry)\b/.test(normalized);
+  if (hasAddLocation && !normalized.includes('from')) {
+    scores.add_items += 2;
+  }
+
+  // Boost remove_items if we see "from" with location
+  const hasRemoveLocation = /\bfrom\s+(the\s+|our\s+|my\s+)?(fridge|freezer|pantry)\b/.test(normalized);
+  if (hasRemoveLocation) {
+    scores.remove_items += 2;
+  }
+
+  // Check first word for common intents
+  if (['add', 'adding', 'put', 'putting', 'store'].includes(firstWord)) {
+    scores.add_items += 3;
+  }
+  if (['remove', 'removing', 'used', 'finished', 'threw'].includes(firstWord)) {
+    scores.remove_items += 3;
   }
 
   // Find the intent with highest score
@@ -245,7 +281,7 @@ function detectIntent(text: string): { intent: VoiceIntent; confidence: number }
 
   // Calculate confidence based on score
   // Higher scores = more confidence (max out at ~0.95)
-  const confidence = maxScore > 0 ? Math.min(0.95, 0.5 + (maxScore * 0.15)) : 0.3;
+  const confidence = maxScore > 0 ? Math.min(0.95, 0.5 + (maxScore * 0.1)) : 0.3;
 
   return { intent: maxIntent, confidence };
 }
