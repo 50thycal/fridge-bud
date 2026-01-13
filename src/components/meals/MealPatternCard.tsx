@@ -27,24 +27,20 @@ export function MealPatternCard({ pattern, isCustom, onEdit, onDelete }: MealPat
     if (!isSwiping) return;
     currentX.current = e.touches[0].clientX;
     const diff = currentX.current - startX.current;
-    // Limit swipe distance, only allow left swipe for delete on custom
-    const maxSwipe = isCustom ? 100 : 0;
-    const clampedDiff = Math.max(-maxSwipe, Math.min(100, diff));
+    // Allow both directions - left for delete (custom only), right for edit
+    const clampedDiff = Math.max(-100, Math.min(100, diff));
     setSwipeX(clampedDiff);
   };
 
   const handleTouchEnd = () => {
     setIsSwiping(false);
 
-    // Calculate diff directly from refs to avoid stale state
-    const diff = currentX.current - startX.current;
-
     // Swipe left threshold for delete (only custom patterns)
-    if (diff < -60 && isCustom) {
+    if (swipeX < -60 && isCustom) {
       onDelete();
     }
-    // Swipe right threshold for edit/view
-    else if (diff > 60) {
+    // Swipe right threshold for edit
+    else if (swipeX > 60) {
       onEdit();
     }
 
@@ -63,8 +59,8 @@ export function MealPatternCard({ pattern, isCustom, onEdit, onDelete }: MealPat
     if (!isSwiping) return;
     currentX.current = e.clientX;
     const diff = currentX.current - startX.current;
-    const maxSwipe = isCustom ? 100 : 0;
-    const clampedDiff = Math.max(-maxSwipe, Math.min(100, diff));
+    // Allow both directions
+    const clampedDiff = Math.max(-100, Math.min(100, diff));
     setSwipeX(clampedDiff);
   };
 
@@ -72,12 +68,9 @@ export function MealPatternCard({ pattern, isCustom, onEdit, onDelete }: MealPat
     if (!isSwiping) return;
     setIsSwiping(false);
 
-    // Calculate diff directly from refs to avoid stale state
-    const diff = currentX.current - startX.current;
-
-    if (diff < -60 && isCustom) {
+    if (swipeX < -60 && isCustom) {
       onDelete();
-    } else if (diff > 60) {
+    } else if (swipeX > 60) {
       onEdit();
     }
 
@@ -100,17 +93,15 @@ export function MealPatternCard({ pattern, isCustom, onEdit, onDelete }: MealPat
           className="flex-1 bg-blue-600 flex items-center justify-start pl-4"
           style={{ opacity: swipeX > 0 ? Math.min(swipeX / 60, 1) : 0 }}
         >
-          <span className="text-white font-medium">View</span>
+          <span className="text-white font-medium">Edit</span>
         </div>
-        {/* Delete action (swipe left reveals this on right) - only for custom */}
-        {isCustom && (
-          <div
-            className="flex-1 bg-red-600 flex items-center justify-end pr-4"
-            style={{ opacity: swipeX < 0 ? Math.min(Math.abs(swipeX) / 60, 1) : 0 }}
-          >
-            <span className="text-white font-medium">Delete</span>
-          </div>
-        )}
+        {/* Delete action (swipe left reveals this on right) */}
+        <div
+          className="flex-1 bg-red-600 flex items-center justify-end pr-4"
+          style={{ opacity: swipeX < 0 ? Math.min(Math.abs(swipeX) / 60, 1) : 0 }}
+        >
+          <span className="text-white font-medium">Delete</span>
+        </div>
       </div>
 
       {/* Swipeable card */}

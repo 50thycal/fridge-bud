@@ -151,12 +151,12 @@ export function PullToRefresh({ children, onRefresh }: PullToRefreshProps) {
         </div>
       </div>
 
-      {/* Main content */}
+      {/* Main content - only apply transform when actively pulling to preserve fixed positioning */}
       <div
-        style={{
-          transform: isRefreshing ? 'translateY(0)' : `translateY(${pullDistance > 0 ? -pullDistance * 0.1 : 0}px)`,
+        style={pullDistance > 0 || isRefreshing ? {
+          transform: `translateY(${-pullDistance * 0.1}px)`,
           transition: pullDistance === 0 ? 'transform 0.2s ease-out' : 'none',
-        }}
+        } : undefined}
       >
         {children}
       </div>
