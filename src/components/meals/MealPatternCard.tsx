@@ -36,12 +36,15 @@ export function MealPatternCard({ pattern, isCustom, onEdit, onDelete }: MealPat
   const handleTouchEnd = () => {
     setIsSwiping(false);
 
+    // Calculate diff directly from refs to avoid stale state
+    const diff = currentX.current - startX.current;
+
     // Swipe left threshold for delete (only custom patterns)
-    if (swipeX < -60 && isCustom) {
+    if (diff < -60 && isCustom) {
       onDelete();
     }
-    // Swipe right threshold for edit
-    else if (swipeX > 60) {
+    // Swipe right threshold for edit/view
+    else if (diff > 60) {
       onEdit();
     }
 
@@ -69,9 +72,12 @@ export function MealPatternCard({ pattern, isCustom, onEdit, onDelete }: MealPat
     if (!isSwiping) return;
     setIsSwiping(false);
 
-    if (swipeX < -60 && isCustom) {
+    // Calculate diff directly from refs to avoid stale state
+    const diff = currentX.current - startX.current;
+
+    if (diff < -60 && isCustom) {
       onDelete();
-    } else if (swipeX > 60) {
+    } else if (diff > 60) {
       onEdit();
     }
 
