@@ -3,6 +3,7 @@ import { HouseholdState, InventoryItem, GroceryItem, MealLog } from './types';
 const STORAGE_KEY = 'fridgebud_state';
 const RECENT_ITEMS_KEY = 'fridgebud_recent';
 const HOUSEHOLD_CODE_KEY = 'fridgebud_household_code';
+const HOUSEHOLD_NAME_KEY = 'fridgebud_household_name';
 
 // Sync status tracking
 let syncInProgress = false;
@@ -30,12 +31,23 @@ export function getHouseholdCode(): string | null {
 
 export function setHouseholdCode(code: string): void {
   if (typeof window === 'undefined') return;
-  localStorage.setItem(HOUSEHOLD_CODE_KEY, code);
+  localStorage.setItem(HOUSEHOLD_CODE_KEY, code.toUpperCase());
+}
+
+export function getHouseholdName(): string | null {
+  if (typeof window === 'undefined') return null;
+  return localStorage.getItem(HOUSEHOLD_NAME_KEY);
+}
+
+export function setHouseholdName(name: string): void {
+  if (typeof window === 'undefined') return;
+  localStorage.setItem(HOUSEHOLD_NAME_KEY, name);
 }
 
 export function clearHouseholdCode(): void {
   if (typeof window === 'undefined') return;
   localStorage.removeItem(HOUSEHOLD_CODE_KEY);
+  localStorage.removeItem(HOUSEHOLD_NAME_KEY);
 }
 
 export function generateHouseholdCode(): string {
@@ -46,6 +58,28 @@ export function generateHouseholdCode(): string {
     code += chars.charAt(Math.floor(Math.random() * chars.length));
   }
   return code;
+}
+
+// Validate custom code format (3-12 alphanumeric characters)
+export function validateHouseholdCode(code: string): { valid: boolean; error?: string } {
+  const cleaned = code.toUpperCase().replace(/[^A-Z0-9]/g, '');
+  if (cleaned.length < 3) {
+    return { valid: false, error: 'Code must be at least 3 characters' };
+  }
+  if (cleaned.length > 12) {
+    return { valid: false, error: 'Code must be 12 characters or less' };
+  }
+  return { valid: true };
+}
+
+// Check if a household code already exists in the cloud
+export async function checkCodeExists(code: string): Promise<boolean> {
+  try {
+    const response = await fetch(`/api/sync?code=${encodeURIComponent(code.toUpperCase())}`);
+    return response.status !== 404;
+  } catch {
+    return false;
+  }
 }
 
 // =============================================================================
@@ -167,8 +201,11 @@ export async function joinHousehold(code: string): Promise<{ success: boolean; s
     const data = await response.json();
     const state = data.state as HouseholdState;
 
-    // Save the code and state locally
+    // Save the code, name, and state locally
     setHouseholdCode(code);
+    if (state.householdName) {
+      setHouseholdName(state.householdName);
+    }
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
 
     return { success: true, state };
@@ -178,13 +215,35 @@ export async function joinHousehold(code: string): Promise<{ success: boolean; s
   }
 }
 
-// Create a new household
-export async function createHousehold(): Promise<{ success: boolean; code?: string; error?: string }> {
-  const code = generateHouseholdCode();
+// Create a new household with optional custom name and code
+export async function createHousehold(
+  name: string,
+  customCode?: string
+): Promise<{ success: boolean; code?: string; error?: string }> {
+  // Use custom code or generate one
+  let code: string;
+
+  if (customCode) {
+    // Validate custom code
+    const validation = validateHouseholdCode(customCode);
+    if (!validation.valid) {
+      return { success: false, error: validation.error };
+    }
+    code = customCode.toUpperCase().replace(/[^A-Z0-9]/g, '');
+
+    // Check if code already exists
+    const exists = await checkCodeExists(code);
+    if (exists) {
+      return { success: false, error: 'This code is already in use. Try a different one.' };
+    }
+  } else {
+    code = generateHouseholdCode();
+  }
 
   try {
     const state = getState();
     state.householdCode = code;
+    state.householdName = name;
 
     const response = await fetch('/api/sync', {
       method: 'POST',
@@ -197,6 +256,7 @@ export async function createHousehold(): Promise<{ success: boolean; code?: stri
     }
 
     setHouseholdCode(code);
+    setHouseholdName(name);
     saveState(state);
 
     return { success: true, code };

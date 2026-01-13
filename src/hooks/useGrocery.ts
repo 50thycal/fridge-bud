@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { GroceryItem, InventoryItem, IngredientCategory } from '@/lib/types';
+import { GroceryItem, InventoryItem, IngredientCategory, HouseholdState } from '@/lib/types';
 import {
   getGroceryItems,
   addGroceryItem,
@@ -19,6 +19,20 @@ export function useGrocery(inventory: InventoryItem[]) {
   useEffect(() => {
     setItems(getGroceryItems());
     setLoading(false);
+  }, []);
+
+  // Listen for sync events to refresh data
+  useEffect(() => {
+    const handleSync = (event: CustomEvent<HouseholdState>) => {
+      if (event.detail?.groceryList) {
+        setItems(event.detail.groceryList);
+      }
+    };
+
+    window.addEventListener('fridgebud-sync', handleSync as EventListener);
+    return () => {
+      window.removeEventListener('fridgebud-sync', handleSync as EventListener);
+    };
   }, []);
 
   // Add item

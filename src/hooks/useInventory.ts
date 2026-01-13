@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { InventoryItem } from '@/lib/types';
+import { InventoryItem, HouseholdState } from '@/lib/types';
 import {
   getInventoryItems,
   addInventoryItem,
@@ -17,6 +17,20 @@ export function useInventory() {
   useEffect(() => {
     setItems(getInventoryItems());
     setLoading(false);
+  }, []);
+
+  // Listen for sync events to refresh data
+  useEffect(() => {
+    const handleSync = (event: CustomEvent<HouseholdState>) => {
+      if (event.detail?.inventory) {
+        setItems(event.detail.inventory);
+      }
+    };
+
+    window.addEventListener('fridgebud-sync', handleSync as EventListener);
+    return () => {
+      window.removeEventListener('fridgebud-sync', handleSync as EventListener);
+    };
   }, []);
 
   // Add item

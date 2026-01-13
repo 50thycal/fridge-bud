@@ -9,26 +9,37 @@ interface SyncSheetProps {
 }
 
 export function SyncSheet({ onClose }: SyncSheetProps) {
-  const { householdCode, syncStatus, lastSynced, error, isConnected, create, join, sync, disconnect } = useSync();
+  const { householdCode, householdName, syncStatus, lastSynced, error, isConnected, create, join, sync, disconnect } = useSync();
   const [joinCode, setJoinCode] = useState('');
+  const [newName, setNewName] = useState('');
+  const [newCode, setNewCode] = useState('');
   const [isJoining, setIsJoining] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
   const [showJoinInput, setShowJoinInput] = useState(false);
+  const [showCreateInput, setShowCreateInput] = useState(false);
+  const [createError, setCreateError] = useState<string | null>(null);
 
   const handleCreate = async () => {
+    if (!newName.trim()) {
+      setCreateError('Please enter a household name');
+      return;
+    }
     setIsCreating(true);
-    await create();
+    setCreateError(null);
+
+    const result = await create(newName.trim(), newCode.trim() || undefined);
+
+    if (!result.success) {
+      setCreateError(result.error || 'Failed to create household');
+    }
     setIsCreating(false);
   };
 
   const handleJoin = async () => {
-    if (joinCode.length < 6) return;
+    if (joinCode.length < 3) return;
     setIsJoining(true);
     const success = await join(joinCode);
     setIsJoining(false);
-    if (!success) {
-      // Keep input visible on error
-    }
   };
 
   const formatLastSynced = (timestamp: number | null) => {
@@ -48,9 +59,18 @@ export function SyncSheet({ onClose }: SyncSheetProps) {
     }
   };
 
+  const resetForms = () => {
+    setShowJoinInput(false);
+    setShowCreateInput(false);
+    setJoinCode('');
+    setNewName('');
+    setNewCode('');
+    setCreateError(null);
+  };
+
   return (
     <div className="fixed inset-0 bg-black/50 z-50 flex items-end justify-center">
-      <div className="bg-zinc-900 w-full max-w-lg rounded-t-3xl p-6 pb-8 animate-slide-up">
+      <div className="bg-zinc-900 w-full max-w-lg rounded-t-3xl p-6 pb-8 animate-slide-up max-h-[90vh] overflow-y-auto">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-xl font-bold text-white">Household Sync</h2>
           <button onClick={onClose} className="text-zinc-400 hover:text-white text-2xl">
@@ -61,6 +81,13 @@ export function SyncSheet({ onClose }: SyncSheetProps) {
         {isConnected ? (
           // Connected state
           <div className="space-y-6">
+            {/* Household Name */}
+            {householdName && (
+              <div className="text-center">
+                <h3 className="text-2xl font-bold text-white">{householdName}</h3>
+              </div>
+            )}
+
             {/* Status */}
             <div className="bg-zinc-800 rounded-xl p-4">
               <div className="flex items-center justify-between mb-3">
@@ -87,6 +114,13 @@ export function SyncSheet({ onClose }: SyncSheetProps) {
               </p>
             </div>
 
+            {/* Auto-sync info */}
+            <div className="bg-zinc-800/50 rounded-xl p-3">
+              <p className="text-zinc-400 text-sm text-center">
+                Auto-syncing every 5 seconds
+              </p>
+            </div>
+
             {error && (
               <div className="bg-red-900/30 border border-red-500 rounded-xl p-3">
                 <p className="text-red-400 text-sm">{error}</p>
@@ -110,33 +144,74 @@ export function SyncSheet({ onClose }: SyncSheetProps) {
               Connect to sync your inventory across devices and keep your data safe in the cloud.
             </p>
 
-            {error && (
+            {(error || createError) && (
               <div className="bg-red-900/30 border border-red-500 rounded-xl p-3">
-                <p className="text-red-400 text-sm">{error}</p>
+                <p className="text-red-400 text-sm">{createError || error}</p>
               </div>
             )}
 
-            {showJoinInput ? (
-              // Join existing household
+            {showCreateInput ? (
+              // Create new household form
+              <div className="space-y-4">
+                <div>
+                  <label className="text-zinc-400 text-sm mb-2 block">Household name *</label>
+                  <input
+                    type="text"
+                    value={newName}
+                    onChange={(e) => setNewName(e.target.value)}
+                    placeholder="e.g., Smith Family"
+                    className="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-4 py-3 text-white placeholder-zinc-600 focus:outline-none focus:border-green-500"
+                    maxLength={30}
+                  />
+                </div>
+                <div>
+                  <label className="text-zinc-400 text-sm mb-2 block">
+                    Custom code <span className="text-zinc-600">(optional)</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={newCode}
+                    onChange={(e) => setNewCode(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ''))}
+                    placeholder="Leave blank for random code"
+                    className="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-4 py-3 text-white text-center font-mono tracking-widest placeholder-zinc-600 focus:outline-none focus:border-green-500"
+                    maxLength={12}
+                  />
+                  <p className="text-zinc-600 text-xs mt-1">3-12 letters and numbers</p>
+                </div>
+                <div className="flex gap-3">
+                  <Button onClick={resetForms} variant="secondary" className="flex-1">
+                    Back
+                  </Button>
+                  <Button
+                    onClick={handleCreate}
+                    disabled={!newName.trim() || isCreating}
+                    className="flex-1"
+                  >
+                    {isCreating ? 'Creating...' : 'Create'}
+                  </Button>
+                </div>
+              </div>
+            ) : showJoinInput ? (
+              // Join existing household form
               <div className="space-y-4">
                 <div>
                   <label className="text-zinc-400 text-sm mb-2 block">Enter household code</label>
                   <input
                     type="text"
                     value={joinCode}
-                    onChange={(e) => setJoinCode(e.target.value.toUpperCase().slice(0, 6))}
+                    onChange={(e) => setJoinCode(e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ''))}
                     placeholder="XXXXXX"
                     className="w-full bg-zinc-800 border border-zinc-700 rounded-xl px-4 py-3 text-white text-center text-2xl font-mono tracking-widest placeholder-zinc-600 focus:outline-none focus:border-blue-500"
-                    maxLength={6}
+                    maxLength={12}
                   />
                 </div>
                 <div className="flex gap-3">
-                  <Button onClick={() => setShowJoinInput(false)} variant="secondary" className="flex-1">
+                  <Button onClick={resetForms} variant="secondary" className="flex-1">
                     Back
                   </Button>
                   <Button
                     onClick={handleJoin}
-                    disabled={joinCode.length < 6 || isJoining}
+                    disabled={joinCode.length < 3 || isJoining}
                     className="flex-1"
                   >
                     {isJoining ? 'Joining...' : 'Join'}
@@ -146,8 +221,8 @@ export function SyncSheet({ onClose }: SyncSheetProps) {
             ) : (
               // Initial options
               <div className="space-y-3">
-                <Button onClick={handleCreate} className="w-full" disabled={isCreating}>
-                  {isCreating ? 'Creating...' : 'Create New Household'}
+                <Button onClick={() => setShowCreateInput(true)} className="w-full">
+                  Create New Household
                 </Button>
                 <Button onClick={() => setShowJoinInput(true)} variant="secondary" className="w-full">
                   Join Existing Household
