@@ -28,7 +28,7 @@ The fridge is the right locus because:
 
 - Fridge, pantry, freezer contents
 - **Rough quantities** (low / some / plenty) - not precise counts
-- **Confidence-based freshness** (Fresh → Probably fine → Use soon → Toss soon)
+- **Confidence-based freshness** (Fresh → Good → Use soon → Bad)
 
 Key insight: Doesn't need to be perfect to be useful. "We probably have chicken" is enough.
 
@@ -69,10 +69,10 @@ This lets the app **suggest**, not dictate.
 ```
 - id: unique identifier
 - name: "Chicken breast"
-- category: protein | vegetable | dairy | grain | condiment | etc.
+- category: protein | vegetable | fruit | dairy | grain | condiment | spice | frozen | beverage | other
 - location: fridge | freezer | pantry
 - quantity: low | some | plenty
-- freshnessState: fresh | probablyFine | useSoon | tossSoon
+- freshnessState: fresh | good | useSoon | bad
 - addedAt: timestamp
 ```
 
@@ -96,20 +96,10 @@ This lets the app **suggest**, not dictate.
 - isActive: boolean
 ```
 
-### MealLog
-```
-- id: unique identifier
-- date: date
-- mealType: breakfast | lunch | dinner | snack
-- patternUsed: optional reference to pattern
-- freeformDescription: "Leftovers", "Ate out"
-- ingredientsUsed: [item references]
-```
-
 ### GroceryItem (Derived - not stored)
 ```
 - name: "Salmon"
-- priority: urgent | replenish | opportunity | wishlist
+- priority: urgent | replenish | opportunity | manual
 - reasoning: "Would enable 2 more fish meals this week"
 - enablesMeals: [pattern references]
 ```
@@ -120,13 +110,12 @@ When calculating "what meal makes sense now":
 
 ```
 Score =
-  (0.4 × InventoryMatch) +      // Do we have the ingredients?
-  (0.3 × ConstraintFit) +        // Does this help weekly goals?
-  (0.2 × FreshnessUrgency) +     // Does this use aging items?
-  (0.1 × RecencyPenalty)         // Did we have this recently?
+  (0.6 × RequiredSlots) +       // Do we have the required ingredients?
+  (0.2 × FlexibleSlots) +       // Do we have the nice-to-haves?
+  (0.2 × AgingBonus)            // Does this use items that need attention?
 ```
 
-This produces a ranked list of meal opportunities with explainable reasoning.
+This produces a ranked list of meal opportunities with explainable reasoning. Meals are also categorized by friction level: "ready" (all required slots filled), "oneAway" (missing one ingredient), or "needsShopping" (missing multiple).
 
 ## UX Principles (Fridge-Mounted iPad)
 
@@ -144,7 +133,6 @@ This produces a ranked list of meal opportunities with explainable reasoning.
 
 ### Quick Actions (Always Visible)
 - "I used [item]" - decrement/remove from inventory
-- "We had [meal]" - log what you ate
 - "Add to list" - manual grocery addition
 - "What can I make?" - surface opportunities
 
@@ -179,6 +167,7 @@ This is a **shared terminal**, not a personal app:
 - Local storage (IndexedDB) for offline-first data
 - Vercel KV for cross-device sync
 - PWA manifest for full-screen iPad installation
+- Voice input via Web Audio API + server-side transcription
 
 **Architecture:**
 - iPad is source of truth, writes to local storage + syncs to Vercel KV
@@ -201,7 +190,8 @@ This reduces burden while maintaining useful accuracy.
 1. **Item entry**: Two-lane system
    - Lane A (fast): Predefined common items + recently used, one-tap add
    - Lane B (fallback): Free text for unusual items
-   - NOT doing: barcode, camera, voice (future maybe)
+   - Voice input for hands-free adding
+   - NOT doing: barcode, camera (future maybe)
 
 2. **Pattern curation**: Hybrid - ship with 15-25 defaults, users can customize later
 
@@ -214,9 +204,10 @@ This reduces burden while maintaining useful accuracy.
 ## MVP Scope
 
 ### In Scope
-- Inventory tracking (fridge + pantry as zones)
-- Meal pattern matching
+- Inventory tracking (fridge + freezer + pantry as zones)
+- Meal pattern matching with custom pattern creation
 - Derived grocery list
+- Voice input for hands-free item entry
 - Phone viewing via shared household code
 - Manual data export/backup
 
@@ -231,33 +222,31 @@ This reduces burden while maintaining useful accuracy.
 
 ## Implementation Phases
 
-### Phase 1: Core Loop (MVP)
+### Phase 1: Core Loop (MVP) ✓ Complete
 - Project setup (Next.js, Tailwind, PWA config)
 - Data layer (local storage + Vercel KV sync)
 - Inventory CRUD with freshness states
-- Dummy meal patterns (15-20)
-- Basic meal opportunity matching
-- Derived grocery list
-- Manual JSON export
-- Phone read-only view
+- 16 default meal patterns + custom pattern creation
+- Meal opportunity matching with friction levels
+- Derived grocery list with smart suggestions
+- Voice input for hands-free entry
+- Manual JSON export/import
+- Multi-device sync via household code
 
 ### Phase 2: Constraints & Planning (Post-MVP)
 - Weekly constraint system
 - Constraint-aware scoring
-- Meal logging
 - Week-at-a-glance view
 
 ### Phase 3: Polish & Habits (Future)
-- Freshness prompting system
-- Smart grocery suggestions
-- Pattern creation UI
+- Freshness prompting system (automated prompts based on shelf life)
 - Kiosk mode optimization
 
 ## Guiding Principles for Development
 
 1. **Prefer "good enough" over perfect** - rough quantities beat exact counts
 2. **Reduce friction at every step** - if it takes more than 3 taps, redesign it
-3. **Make the common case fast** - logging "we had stir fry" should be instant
+3. **Make the common case fast** - adding chicken to inventory should be instant
 4. **Surface insights, don't require input** - proactive > reactive
 5. **Embrace the physical context** - this lives on a fridge, design for that
 6. **One household, one truth** - no personalization friction
