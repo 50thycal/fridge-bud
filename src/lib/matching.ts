@@ -63,11 +63,14 @@ function getAgingItems(inventory: InventoryItem[]): InventoryItem[] {
 }
 
 // Calculate meal opportunities
-export function calculateOpportunities(inventory: InventoryItem[]): MealOpportunity[] {
+export function calculateOpportunities(
+  inventory: InventoryItem[],
+  patterns: MealPattern[] = defaultMealPatterns
+): MealOpportunity[] {
   const agingItems = getAgingItems(inventory);
   const opportunities: MealOpportunity[] = [];
 
-  for (const pattern of defaultMealPatterns) {
+  for (const pattern of patterns) {
     const satisfied: MealOpportunity['satisfied'] = [];
     const missing: IngredientSlot[] = [];
     const usesAgingItemsList: InventoryItem[] = [];
@@ -154,18 +157,27 @@ export function calculateOpportunities(inventory: InventoryItem[]): MealOpportun
 }
 
 // Get meals that are ready to make now
-export function getReadyMeals(inventory: InventoryItem[]): MealOpportunity[] {
-  return calculateOpportunities(inventory).filter(o => o.frictionLevel === 'ready');
+export function getReadyMeals(
+  inventory: InventoryItem[],
+  patterns?: MealPattern[]
+): MealOpportunity[] {
+  return calculateOpportunities(inventory, patterns).filter(o => o.frictionLevel === 'ready');
 }
 
 // Get meals that are one ingredient away
-export function getAlmostReady(inventory: InventoryItem[]): MealOpportunity[] {
-  return calculateOpportunities(inventory).filter(o => o.frictionLevel === 'oneAway');
+export function getAlmostReady(
+  inventory: InventoryItem[],
+  patterns?: MealPattern[]
+): MealOpportunity[] {
+  return calculateOpportunities(inventory, patterns).filter(o => o.frictionLevel === 'oneAway');
 }
 
 // Get meals that would use aging items
-export function getMealsThatUseAgingItems(inventory: InventoryItem[]): MealOpportunity[] {
-  return calculateOpportunities(inventory)
+export function getMealsThatUseAgingItems(
+  inventory: InventoryItem[],
+  patterns?: MealPattern[]
+): MealOpportunity[] {
+  return calculateOpportunities(inventory, patterns)
     .filter(o => o.usesAgingItems.length > 0 && o.frictionLevel !== 'needsShopping')
     .sort((a, b) => b.usesAgingItems.length - a.usesAgingItems.length);
 }

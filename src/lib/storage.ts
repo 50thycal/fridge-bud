@@ -1,8 +1,9 @@
-import { HouseholdState, InventoryItem, GroceryItem, MealLog } from './types';
+import { HouseholdState, InventoryItem, GroceryItem, MealLog, MealPattern } from './types';
 
 const STORAGE_KEY = 'fridgebud_state';
 const RECENT_ITEMS_KEY = 'fridgebud_recent';
 const HOUSEHOLD_CODE_KEY = 'fridgebud_household_code';
+const CUSTOM_PATTERNS_KEY = 'fridgebud_custom_patterns';
 
 // Sync status tracking
 let syncInProgress = false;
@@ -480,4 +481,64 @@ export function clearAllData(): void {
   localStorage.removeItem(STORAGE_KEY);
   localStorage.removeItem(RECENT_ITEMS_KEY);
   // Note: Not clearing household code - that's a separate action
+}
+
+// =============================================================================
+// Custom Meal Pattern Operations
+// =============================================================================
+
+export function getCustomMealPatterns(): MealPattern[] {
+  if (typeof window === 'undefined') return [];
+
+  try {
+    const stored = localStorage.getItem(CUSTOM_PATTERNS_KEY);
+    if (!stored) return [];
+    return JSON.parse(stored);
+  } catch {
+    return [];
+  }
+}
+
+function saveCustomPatterns(patterns: MealPattern[]): void {
+  if (typeof window === 'undefined') return;
+  localStorage.setItem(CUSTOM_PATTERNS_KEY, JSON.stringify(patterns));
+}
+
+export function addCustomMealPattern(pattern: Omit<MealPattern, 'id'>): MealPattern {
+  const patterns = getCustomMealPatterns();
+
+  const newPattern: MealPattern = {
+    ...pattern,
+    id: `custom-${generateId()}`,
+  };
+
+  patterns.push(newPattern);
+  saveCustomPatterns(patterns);
+  return newPattern;
+}
+
+export function updateCustomMealPattern(id: string, updates: Partial<MealPattern>): MealPattern | null {
+  const patterns = getCustomMealPatterns();
+  const index = patterns.findIndex(p => p.id === id);
+
+  if (index === -1) return null;
+
+  patterns[index] = {
+    ...patterns[index],
+    ...updates,
+  };
+
+  saveCustomPatterns(patterns);
+  return patterns[index];
+}
+
+export function removeCustomMealPattern(id: string): boolean {
+  const patterns = getCustomMealPatterns();
+  const index = patterns.findIndex(p => p.id === id);
+
+  if (index === -1) return false;
+
+  patterns.splice(index, 1);
+  saveCustomPatterns(patterns);
+  return true;
 }
