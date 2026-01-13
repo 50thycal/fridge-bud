@@ -5,9 +5,11 @@ import { HouseholdState } from '@/lib/types';
 const KV_PREFIX = 'household:';
 
 // GET - Fetch state from KV by household code
+// Use ?timestamp=true for lightweight check (returns only lastUpdated)
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
   const code = searchParams.get('code');
+  const timestampOnly = searchParams.get('timestamp') === 'true';
 
   if (!code) {
     return NextResponse.json(
@@ -24,6 +26,14 @@ export async function GET(request: NextRequest) {
         { error: 'Household not found', exists: false },
         { status: 404 }
       );
+    }
+
+    // Lightweight timestamp check - only return lastUpdated
+    if (timestampOnly) {
+      return NextResponse.json({
+        lastUpdated: state.lastUpdated,
+        exists: true
+      });
     }
 
     return NextResponse.json({ state, exists: true });

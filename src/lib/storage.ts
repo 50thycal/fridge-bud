@@ -151,6 +151,51 @@ export async function syncFromCloud(): Promise<HouseholdState | null> {
   }
 }
 
+// Lightweight check - fetch only the timestamp from cloud
+export async function checkCloudTimestamp(): Promise<number | null> {
+  const code = getHouseholdCode();
+  if (!code) return null;
+
+  try {
+    const response = await fetch(`/api/sync?code=${encodeURIComponent(code)}&timestamp=true`);
+
+    if (response.status === 404) {
+      return null;
+    }
+
+    if (!response.ok) {
+      return null;
+    }
+
+    const data = await response.json();
+    return data.lastUpdated as number;
+  } catch (error) {
+    console.error('Check cloud timestamp error:', error);
+    return null;
+  }
+}
+
+// Check if cloud has newer data and pull if needed
+export async function pollForChanges(): Promise<{ updated: boolean; state?: HouseholdState }> {
+  const cloudTimestamp = await checkCloudTimestamp();
+  if (cloudTimestamp === null) {
+    return { updated: false };
+  }
+
+  const localState = getState();
+
+  // Cloud has newer data - fetch full state
+  if (cloudTimestamp > localState.lastUpdated) {
+    const cloudState = await syncFromCloud();
+    if (cloudState) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(cloudState));
+      return { updated: true, state: cloudState };
+    }
+  }
+
+  return { updated: false };
+}
+
 // Join an existing household by code
 export async function joinHousehold(code: string): Promise<{ success: boolean; state?: HouseholdState; error?: string }> {
   try {
