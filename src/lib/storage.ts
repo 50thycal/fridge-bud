@@ -2,6 +2,12 @@ import { HouseholdState, InventoryItem, GroceryItem, MealLog } from './types';
 
 const STORAGE_KEY = 'fridgebud_state';
 const RECENT_ITEMS_KEY = 'fridgebud_recent';
+const HOUSEHOLD_CODE_KEY = 'fridgebud_household_code';
+
+// Sync status tracking
+let syncInProgress = false;
+let lastSyncTime = 0;
+const SYNC_DEBOUNCE_MS = 2000; // Debounce syncs to avoid hammering the API
 
 // Default empty state
 function getDefaultState(): HouseholdState {
@@ -12,6 +18,39 @@ function getDefaultState(): HouseholdState {
     lastUpdated: Date.now(),
   };
 }
+
+// =============================================================================
+// Household Code Management
+// =============================================================================
+
+export function getHouseholdCode(): string | null {
+  if (typeof window === 'undefined') return null;
+  return localStorage.getItem(HOUSEHOLD_CODE_KEY);
+}
+
+export function setHouseholdCode(code: string): void {
+  if (typeof window === 'undefined') return;
+  localStorage.setItem(HOUSEHOLD_CODE_KEY, code);
+}
+
+export function clearHouseholdCode(): void {
+  if (typeof window === 'undefined') return;
+  localStorage.removeItem(HOUSEHOLD_CODE_KEY);
+}
+
+export function generateHouseholdCode(): string {
+  // Generate a 6-character alphanumeric code
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'; // Removed confusing chars (0, O, I, 1)
+  let code = '';
+  for (let i = 0; i < 6; i++) {
+    code += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return code;
+}
+
+// =============================================================================
+// Local Storage Operations
+// =============================================================================
 
 // Get state from localStorage
 export function getState(): HouseholdState {
@@ -26,12 +65,166 @@ export function getState(): HouseholdState {
   }
 }
 
-// Save state to localStorage
+// Save state to localStorage (and trigger sync)
 export function saveState(state: HouseholdState): void {
   if (typeof window === 'undefined') return;
 
   state.lastUpdated = Date.now();
   localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+
+  // Trigger background sync (debounced)
+  scheduleSyncToCloud();
+}
+
+// =============================================================================
+// Cloud Sync Operations
+// =============================================================================
+
+// Schedule a sync to cloud (debounced)
+function scheduleSyncToCloud(): void {
+  const now = Date.now();
+  if (now - lastSyncTime < SYNC_DEBOUNCE_MS) {
+    // Schedule for later
+    setTimeout(() => {
+      syncToCloud();
+    }, SYNC_DEBOUNCE_MS);
+    return;
+  }
+  syncToCloud();
+}
+
+// Sync local state to Vercel KV
+export async function syncToCloud(): Promise<boolean> {
+  if (syncInProgress) return false;
+
+  const code = getHouseholdCode();
+  if (!code) return false;
+
+  syncInProgress = true;
+  lastSyncTime = Date.now();
+
+  try {
+    const state = getState();
+    const response = await fetch('/api/sync', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ code, state }),
+    });
+
+    if (!response.ok) {
+      console.error('Sync to cloud failed:', response.statusText);
+      return false;
+    }
+
+    return true;
+  } catch (error) {
+    console.error('Sync to cloud error:', error);
+    return false;
+  } finally {
+    syncInProgress = false;
+  }
+}
+
+// Fetch state from Vercel KV
+export async function syncFromCloud(): Promise<HouseholdState | null> {
+  const code = getHouseholdCode();
+  if (!code) return null;
+
+  try {
+    const response = await fetch(`/api/sync?code=${encodeURIComponent(code)}`);
+
+    if (response.status === 404) {
+      // Household doesn't exist in cloud yet
+      return null;
+    }
+
+    if (!response.ok) {
+      console.error('Sync from cloud failed:', response.statusText);
+      return null;
+    }
+
+    const data = await response.json();
+    return data.state as HouseholdState;
+  } catch (error) {
+    console.error('Sync from cloud error:', error);
+    return null;
+  }
+}
+
+// Join an existing household by code
+export async function joinHousehold(code: string): Promise<{ success: boolean; state?: HouseholdState; error?: string }> {
+  try {
+    const response = await fetch(`/api/sync?code=${encodeURIComponent(code)}`);
+
+    if (response.status === 404) {
+      return { success: false, error: 'Household not found' };
+    }
+
+    if (!response.ok) {
+      return { success: false, error: 'Failed to join household' };
+    }
+
+    const data = await response.json();
+    const state = data.state as HouseholdState;
+
+    // Save the code and state locally
+    setHouseholdCode(code);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+
+    return { success: true, state };
+  } catch (error) {
+    console.error('Join household error:', error);
+    return { success: false, error: 'Network error' };
+  }
+}
+
+// Create a new household
+export async function createHousehold(): Promise<{ success: boolean; code?: string; error?: string }> {
+  const code = generateHouseholdCode();
+
+  try {
+    const state = getState();
+    state.householdCode = code;
+
+    const response = await fetch('/api/sync', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ code, state }),
+    });
+
+    if (!response.ok) {
+      return { success: false, error: 'Failed to create household' };
+    }
+
+    setHouseholdCode(code);
+    saveState(state);
+
+    return { success: true, code };
+  } catch (error) {
+    console.error('Create household error:', error);
+    return { success: false, error: 'Network error' };
+  }
+}
+
+// Merge cloud state with local state (cloud wins for conflicts based on lastUpdated)
+export async function pullAndMerge(): Promise<HouseholdState> {
+  const localState = getState();
+  const cloudState = await syncFromCloud();
+
+  if (!cloudState) {
+    // No cloud state, use local
+    return localState;
+  }
+
+  // If cloud is newer, use cloud state
+  if (cloudState.lastUpdated > localState.lastUpdated) {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(cloudState));
+    return cloudState;
+  }
+
+  // Local is newer, push to cloud
+  await syncToCloud();
+  return localState;
 }
 
 // Generate unique ID
@@ -39,7 +232,10 @@ export function generateId(): string {
   return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 }
 
-// Inventory operations
+// =============================================================================
+// Inventory Operations
+// =============================================================================
+
 export function addInventoryItem(item: Omit<InventoryItem, 'id' | 'addedAt' | 'updatedAt'>): InventoryItem {
   const state = getState();
   const now = Date.now();
@@ -91,7 +287,10 @@ export function getInventoryItems(): InventoryItem[] {
   return getState().inventory;
 }
 
-// Grocery list operations
+// =============================================================================
+// Grocery List Operations
+// =============================================================================
+
 export function addGroceryItem(item: Omit<GroceryItem, 'id' | 'addedAt' | 'checked'>): GroceryItem {
   const state = getState();
 
@@ -139,7 +338,10 @@ export function getGroceryItems(): GroceryItem[] {
   return getState().groceryList;
 }
 
-// Meal log operations
+// =============================================================================
+// Meal Log Operations
+// =============================================================================
+
 export function logMeal(log: Omit<MealLog, 'id' | 'createdAt'>): MealLog {
   const state = getState();
 
@@ -158,7 +360,10 @@ export function getMealLogs(): MealLog[] {
   return getState().mealLog;
 }
 
-// Recent items tracking (for quick-add)
+// =============================================================================
+// Recent Items Tracking
+// =============================================================================
+
 export function getRecentItemNames(): string[] {
   if (typeof window === 'undefined') return [];
 
@@ -183,13 +388,15 @@ export function addRecentItem(name: string): void {
   localStorage.setItem(RECENT_ITEMS_KEY, JSON.stringify(trimmed));
 }
 
-// Export data as JSON (for backup)
+// =============================================================================
+// Data Export/Import
+// =============================================================================
+
 export function exportData(): string {
   const state = getState();
   return JSON.stringify(state, null, 2);
 }
 
-// Import data from JSON
 export function importData(jsonString: string): boolean {
   try {
     const data = JSON.parse(jsonString) as HouseholdState;
@@ -206,9 +413,9 @@ export function importData(jsonString: string): boolean {
   }
 }
 
-// Clear all data
 export function clearAllData(): void {
   if (typeof window === 'undefined') return;
   localStorage.removeItem(STORAGE_KEY);
   localStorage.removeItem(RECENT_ITEMS_KEY);
+  // Note: Not clearing household code - that's a separate action
 }

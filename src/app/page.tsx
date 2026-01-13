@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import Link from 'next/link';
 import { useInventory } from '@/hooks/useInventory';
 import { useMeals } from '@/hooks/useMeals';
@@ -8,9 +9,12 @@ import { Card } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { BottomNav } from '@/components/ui/BottomNav';
+import { SyncIndicator } from '@/components/sync/SyncIndicator';
+import { SyncSheet } from '@/components/sync/SyncSheet';
 import { exportData } from '@/lib/storage';
 
 export default function HomePage() {
+  const [showSyncSheet, setShowSyncSheet] = useState(false);
   const { items: inventory, getUrgent } = useInventory();
   const { topSuggestions, readyCount } = useMeals(inventory);
   const { uncheckedCount } = useGrocery(inventory);
@@ -31,7 +35,10 @@ export default function HomePage() {
     <div className="min-h-screen bg-zinc-950 pb-24">
       {/* Header */}
       <div className="p-4 pt-8">
-        <h1 className="text-3xl font-bold mb-1">FridgeBud</h1>
+        <div className="flex items-center justify-between mb-1">
+          <h1 className="text-3xl font-bold">FridgeBud</h1>
+          <SyncIndicator onClick={() => setShowSyncSheet(true)} />
+        </div>
         <p className="text-zinc-500">What&apos;s for dinner?</p>
       </div>
 
@@ -157,6 +164,9 @@ export default function HomePage() {
       </div>
 
       <BottomNav />
+
+      {/* Sync Sheet */}
+      {showSyncSheet && <SyncSheet onClose={() => setShowSyncSheet(false)} />}
     </div>
   );
 }
