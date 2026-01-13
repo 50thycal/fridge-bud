@@ -28,9 +28,11 @@ body {
   padding-top: env(safe-area-inset-top);
 }
 
-/* Prevent pull-to-refresh on PWA */
-html {
+/* Prevent pull-to-refresh on PWA and constrain to viewport */
+html, body {
   overscroll-behavior: none;
+  height: 100dvh;
+  overflow: hidden;
 }
 
 /* Touch optimizations */

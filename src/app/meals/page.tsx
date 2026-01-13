@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/Button';
 import { BottomNav } from '@/components/ui/BottomNav';
 import { AddMealSheet } from '@/components/meals/AddMealSheet';
 import { EditMealSheet } from '@/components/meals/EditMealSheet';
+import { MealPatternCard } from '@/components/meals/MealPatternCard';
 import { MealOpportunity, MealPattern } from '@/lib/types';
 
 type ViewMode = 'suggestions' | 'library';
@@ -82,6 +83,7 @@ export default function MealsPage() {
             patterns={patterns}
             isCustomPattern={isCustomPattern}
             onEdit={setEditingPattern}
+            onDelete={remove}
           />
         )}
       </div>
@@ -192,16 +194,23 @@ function LibraryView({
   patterns,
   isCustomPattern,
   onEdit,
+  onDelete,
 }: {
   patterns: MealPattern[];
   isCustomPattern: (id: string) => boolean;
   onEdit: (pattern: MealPattern) => void;
+  onDelete: (id: string) => void;
 }) {
   const customPatterns = patterns.filter(p => isCustomPattern(p.id));
   const defaultPatterns = patterns.filter(p => !isCustomPattern(p.id));
 
   return (
     <>
+      {/* Swipe hint */}
+      <p className="text-xs text-zinc-600 text-center mb-4">
+        Swipe right to view details{customPatterns.length > 0 ? ', swipe left on custom meals to delete' : ''}
+      </p>
+
       {/* Custom Meals */}
       {customPatterns.length > 0 && (
         <section>
@@ -215,6 +224,7 @@ function LibraryView({
                 pattern={pattern}
                 isCustom={true}
                 onEdit={() => onEdit(pattern)}
+                onDelete={() => onDelete(pattern.id)}
               />
             ))}
           </div>
@@ -233,6 +243,7 @@ function LibraryView({
               pattern={pattern}
               isCustom={false}
               onEdit={() => onEdit(pattern)}
+              onDelete={() => {}}
             />
           ))}
         </div>
@@ -308,63 +319,3 @@ function MealOpportunityCard({ opportunity }: { opportunity: MealOpportunity }) 
   );
 }
 
-// Meal Pattern Card (for library view)
-function MealPatternCard({
-  pattern,
-  isCustom,
-  onEdit,
-}: {
-  pattern: MealPattern;
-  isCustom: boolean;
-  onEdit: () => void;
-}) {
-  return (
-    <Card
-      className="active:scale-[0.98] transition-transform cursor-pointer"
-      onClick={onEdit}
-    >
-      <div className="flex justify-between items-start mb-2">
-        <h3 className="font-semibold text-lg text-white">{pattern.name}</h3>
-        <Badge variant={isCustom ? 'success' : 'default'}>
-          {isCustom ? 'Custom' : 'Default'}
-        </Badge>
-      </div>
-
-      {pattern.description && (
-        <p className="text-zinc-400 text-sm mb-3">{pattern.description}</p>
-      )}
-
-      {/* Required slots */}
-      {pattern.requiredSlots.length > 0 && (
-        <div className="mb-2">
-          <span className="text-xs text-green-500 uppercase tracking-wide">Required: </span>
-          <span className="text-sm text-zinc-300">
-            {pattern.requiredSlots.map(s => s.role).join(', ')}
-          </span>
-        </div>
-      )}
-
-      {/* Flexible slots */}
-      {pattern.flexibleSlots.length > 0 && (
-        <div className="mb-2">
-          <span className="text-xs text-yellow-500 uppercase tracking-wide">Flexible: </span>
-          <span className="text-sm text-zinc-300">
-            {pattern.flexibleSlots.map(s => s.role).join(', ')}
-          </span>
-        </div>
-      )}
-
-      {/* Tags & Info */}
-      <div className="flex flex-wrap gap-1 mt-3">
-        {pattern.mealTypes.map((type) => (
-          <span key={type} className="text-xs text-zinc-400 bg-zinc-800 px-2 py-0.5 rounded capitalize">
-            {type}
-          </span>
-        ))}
-        <span className="text-xs text-zinc-600 bg-zinc-800/50 px-2 py-0.5 rounded capitalize">
-          {pattern.effort}
-        </span>
-      </div>
-    </Card>
-  );
-}
