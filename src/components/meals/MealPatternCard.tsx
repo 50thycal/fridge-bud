@@ -2,16 +2,14 @@
 
 import { useState, useRef } from 'react';
 import { MealPattern } from '@/lib/types';
-import { Badge } from '@/components/ui/Badge';
 
 interface MealPatternCardProps {
   pattern: MealPattern;
-  isCustom: boolean;
   onEdit: () => void;
   onDelete: () => void;
 }
 
-export function MealPatternCard({ pattern, isCustom, onEdit, onDelete }: MealPatternCardProps) {
+export function MealPatternCard({ pattern, onEdit, onDelete }: MealPatternCardProps) {
   const [swipeX, setSwipeX] = useState(0);
   const [isSwiping, setIsSwiping] = useState(false);
   const startX = useRef(0);
@@ -27,7 +25,7 @@ export function MealPatternCard({ pattern, isCustom, onEdit, onDelete }: MealPat
     if (!isSwiping) return;
     currentX.current = e.touches[0].clientX;
     const diff = currentX.current - startX.current;
-    // Allow both directions - left for delete (custom only), right for edit
+    // Allow both directions - left for delete, right for edit
     const clampedDiff = Math.max(-100, Math.min(100, diff));
     setSwipeX(clampedDiff);
   };
@@ -35,8 +33,8 @@ export function MealPatternCard({ pattern, isCustom, onEdit, onDelete }: MealPat
   const handleTouchEnd = () => {
     setIsSwiping(false);
 
-    // Swipe left threshold for delete (only custom patterns)
-    if (swipeX < -60 && isCustom) {
+    // Swipe left threshold for delete
+    if (swipeX < -60) {
       onDelete();
     }
     // Swipe right threshold for edit
@@ -68,7 +66,7 @@ export function MealPatternCard({ pattern, isCustom, onEdit, onDelete }: MealPat
     if (!isSwiping) return;
     setIsSwiping(false);
 
-    if (swipeX < -60 && isCustom) {
+    if (swipeX < -60) {
       onDelete();
     } else if (swipeX > 60) {
       onEdit();
@@ -121,9 +119,6 @@ export function MealPatternCard({ pattern, isCustom, onEdit, onDelete }: MealPat
       >
         <div className="flex justify-between items-start mb-2">
           <h3 className="font-semibold text-lg text-white">{pattern.name}</h3>
-          <Badge variant={isCustom ? 'success' : 'default'}>
-            {isCustom ? 'Custom' : 'Default'}
-          </Badge>
         </div>
 
         {pattern.description && (

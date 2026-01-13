@@ -3,7 +3,8 @@ import { HouseholdState, InventoryItem, GroceryItem, MealLog, MealPattern } from
 const STORAGE_KEY = 'fridgebud_state';
 const RECENT_ITEMS_KEY = 'fridgebud_recent';
 const HOUSEHOLD_CODE_KEY = 'fridgebud_household_code';
-const CUSTOM_PATTERNS_KEY = 'fridgebud_custom_patterns';
+const MEAL_PATTERNS_KEY = 'fridgebud_meal_patterns';
+const PATTERNS_INITIALIZED_KEY = 'fridgebud_patterns_initialized';
 
 // Sync status tracking
 let syncInProgress = false;
@@ -354,8 +355,16 @@ export function getInventoryItems(): InventoryItem[] {
 // Grocery List Operations
 // =============================================================================
 
-export function addGroceryItem(item: Omit<GroceryItem, 'id' | 'addedAt' | 'checked'>): GroceryItem {
+export function addGroceryItem(item: Omit<GroceryItem, 'id' | 'addedAt' | 'checked'>): GroceryItem | null {
   const state = getState();
+
+  // Check if item with same name already exists (case-insensitive)
+  const existingItem = state.groceryList.find(
+    i => i.name.toLowerCase() === item.name.toLowerCase()
+  );
+  if (existingItem) {
+    return null; // Item already exists, don't add duplicate
+  }
 
   const newItem: GroceryItem = {
     ...item,
@@ -484,14 +493,14 @@ export function clearAllData(): void {
 }
 
 // =============================================================================
-// Custom Meal Pattern Operations
+// Meal Pattern Operations
 // =============================================================================
 
-export function getCustomMealPatterns(): MealPattern[] {
+export function getMealPatterns(): MealPattern[] {
   if (typeof window === 'undefined') return [];
 
   try {
-    const stored = localStorage.getItem(CUSTOM_PATTERNS_KEY);
+    const stored = localStorage.getItem(MEAL_PATTERNS_KEY);
     if (!stored) return [];
     return JSON.parse(stored);
   } catch {
@@ -499,26 +508,36 @@ export function getCustomMealPatterns(): MealPattern[] {
   }
 }
 
-function saveCustomPatterns(patterns: MealPattern[]): void {
-  if (typeof window === 'undefined') return;
-  localStorage.setItem(CUSTOM_PATTERNS_KEY, JSON.stringify(patterns));
+export function arePatternsInitialized(): boolean {
+  if (typeof window === 'undefined') return false;
+  return localStorage.getItem(PATTERNS_INITIALIZED_KEY) === 'true';
 }
 
-export function addCustomMealPattern(pattern: Omit<MealPattern, 'id'>): MealPattern {
-  const patterns = getCustomMealPatterns();
+export function markPatternsInitialized(): void {
+  if (typeof window === 'undefined') return;
+  localStorage.setItem(PATTERNS_INITIALIZED_KEY, 'true');
+}
+
+export function saveMealPatterns(patterns: MealPattern[]): void {
+  if (typeof window === 'undefined') return;
+  localStorage.setItem(MEAL_PATTERNS_KEY, JSON.stringify(patterns));
+}
+
+export function addMealPattern(pattern: Omit<MealPattern, 'id'>): MealPattern {
+  const patterns = getMealPatterns();
 
   const newPattern: MealPattern = {
     ...pattern,
-    id: `custom-${generateId()}`,
+    id: generateId(),
   };
 
   patterns.push(newPattern);
-  saveCustomPatterns(patterns);
+  saveMealPatterns(patterns);
   return newPattern;
 }
 
-export function updateCustomMealPattern(id: string, updates: Partial<MealPattern>): MealPattern | null {
-  const patterns = getCustomMealPatterns();
+export function updateMealPattern(id: string, updates: Partial<MealPattern>): MealPattern | null {
+  const patterns = getMealPatterns();
   const index = patterns.findIndex(p => p.id === id);
 
   if (index === -1) return null;
@@ -528,17 +547,17 @@ export function updateCustomMealPattern(id: string, updates: Partial<MealPattern
     ...updates,
   };
 
-  saveCustomPatterns(patterns);
+  saveMealPatterns(patterns);
   return patterns[index];
 }
 
-export function removeCustomMealPattern(id: string): boolean {
-  const patterns = getCustomMealPatterns();
+export function removeMealPattern(id: string): boolean {
+  const patterns = getMealPatterns();
   const index = patterns.findIndex(p => p.id === id);
 
   if (index === -1) return false;
 
   patterns.splice(index, 1);
-  saveCustomPatterns(patterns);
+  saveMealPatterns(patterns);
   return true;
 }

@@ -21,7 +21,7 @@ export function useGrocery(inventory: InventoryItem[]) {
     setLoading(false);
   }, []);
 
-  // Add item
+  // Add item (returns null if already exists)
   const add = useCallback((
     name: string,
     category: IngredientCategory,
@@ -29,7 +29,9 @@ export function useGrocery(inventory: InventoryItem[]) {
     priority: GroceryItem['priority'] = 'manual'
   ) => {
     const newItem = addGroceryItem({ name, category, reason, priority });
-    setItems(prev => [...prev, newItem]);
+    if (newItem) {
+      setItems(prev => [...prev, newItem]);
+    }
     return newItem;
   }, []);
 
