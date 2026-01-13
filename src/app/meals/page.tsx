@@ -19,7 +19,7 @@ type ViewMode = 'suggestions' | 'library';
 export default function MealsPage() {
   const { items } = useInventory();
   const { ready, almostReady, opportunities } = useMeals(items);
-  const { patterns, add, update, remove, isCustomPattern } = useMealPatterns();
+  const { patterns, add, update, remove } = useMealPatterns();
   const { add: addToGrocery } = useGrocery(items);
 
   const [viewMode, setViewMode] = useState<ViewMode>('suggestions');
@@ -96,7 +96,6 @@ export default function MealsPage() {
         ) : (
           <LibraryView
             patterns={patterns}
-            isCustomPattern={isCustomPattern}
             onEdit={setEditingPattern}
             onDelete={remove}
           />
@@ -114,7 +113,6 @@ export default function MealsPage() {
       {editingPattern && (
         <EditMealSheet
           pattern={editingPattern}
-          isCustom={isCustomPattern(editingPattern.id)}
           onUpdate={(updates) => update(editingPattern.id, updates)}
           onDelete={() => remove(editingPattern.id)}
           onClose={() => setEditingPattern(null)}
@@ -226,18 +224,13 @@ function SuggestionsView({
 // Library View Component
 function LibraryView({
   patterns,
-  isCustomPattern,
   onEdit,
   onDelete,
 }: {
   patterns: MealPattern[];
-  isCustomPattern: (id: string) => boolean;
   onEdit: (pattern: MealPattern) => void;
   onDelete: (id: string) => void;
 }) {
-  const customPatterns = patterns.filter(p => isCustomPattern(p.id));
-  const defaultPatterns = patterns.filter(p => !isCustomPattern(p.id));
-
   return (
     <>
       {/* Swipe hint */}
@@ -245,39 +238,18 @@ function LibraryView({
         Swipe left to delete • Swipe right to edit
       </p>
 
-      {/* Custom Meals */}
-      {customPatterns.length > 0 && (
-        <section>
-          <h2 className="text-lg font-semibold text-green-500 mb-3">
-            My Meals ({customPatterns.length})
-          </h2>
-          <div className="space-y-3">
-            {customPatterns.map((pattern) => (
-              <MealPatternCard
-                key={pattern.id}
-                pattern={pattern}
-                isCustom={true}
-                onEdit={() => onEdit(pattern)}
-                onDelete={() => onDelete(pattern.id)}
-              />
-            ))}
-          </div>
-        </section>
-      )}
-
-      {/* Default Meals */}
+      {/* All Meals */}
       <section>
         <h2 className="text-lg font-semibold text-zinc-400 mb-3">
-          Default Meals ({defaultPatterns.length})
+          All Meals ({patterns.length})
         </h2>
         <div className="space-y-3">
-          {defaultPatterns.map((pattern) => (
+          {patterns.map((pattern) => (
             <MealPatternCard
               key={pattern.id}
               pattern={pattern}
-              isCustom={false}
               onEdit={() => onEdit(pattern)}
-              onDelete={() => {}}
+              onDelete={() => onDelete(pattern.id)}
             />
           ))}
         </div>
