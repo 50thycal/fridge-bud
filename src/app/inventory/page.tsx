@@ -10,7 +10,7 @@ import { BottomNav } from '@/components/ui/BottomNav';
 import { InventoryItem, StorageLocation } from '@/lib/types';
 
 export default function InventoryPage() {
-  const { items, add, update, remove, decrement, getByLocation } = useInventory();
+  const { items, add, update, remove, getByLocation } = useInventory();
   const [showAddSheet, setShowAddSheet] = useState(false);
   const [editingItem, setEditingItem] = useState<InventoryItem | null>(null);
   const [activeTab, setActiveTab] = useState<StorageLocation | 'all'>('all');
@@ -56,11 +56,13 @@ export default function InventoryPage() {
 
       {/* Content */}
       <div className="p-4">
-        {items.length === 0 ? (
+        {displayItems.length === 0 ? (
           <div className="text-center py-12">
-            <p className="text-zinc-500 text-lg mb-4">No items yet</p>
+            <p className="text-zinc-500 text-lg mb-4">
+              {items.length === 0 ? 'No items yet' : `No items in ${activeTab === 'all' ? 'inventory' : activeTab}`}
+            </p>
             <Button onClick={() => setShowAddSheet(true)}>
-              Add your first item
+              {items.length === 0 ? 'Add your first item' : 'Add item'}
             </Button>
           </div>
         ) : (
@@ -76,8 +78,8 @@ export default function InventoryPage() {
                     <InventoryItemCard
                       key={item.id}
                       item={item}
-                      onTap={() => decrement(item.id)}
-                      onLongPress={() => setEditingItem(item)}
+                      onEdit={() => setEditingItem(item)}
+                      onDelete={() => remove(item.id)}
                     />
                   ))}
                 </div>
@@ -97,8 +99,8 @@ export default function InventoryPage() {
                     <InventoryItemCard
                       key={item.id}
                       item={item}
-                      onTap={() => decrement(item.id)}
-                      onLongPress={() => setEditingItem(item)}
+                      onEdit={() => setEditingItem(item)}
+                      onDelete={() => remove(item.id)}
                     />
                   ))}
                 </div>
@@ -108,9 +110,9 @@ export default function InventoryPage() {
         )}
 
         {/* Usage hint */}
-        {items.length > 0 && (
+        {displayItems.length > 0 && (
           <p className="text-center text-zinc-600 text-sm mt-6">
-            Tap to use • Long press to edit
+            Swipe left to delete • Swipe right to edit
           </p>
         )}
       </div>
