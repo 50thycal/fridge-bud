@@ -99,7 +99,7 @@ export function PullToRefresh({ children, onRefresh }: PullToRefreshProps) {
   const shouldTrigger = pullDistance >= PULL_THRESHOLD;
 
   return (
-    <div ref={containerRef} className="h-full overflow-auto">
+    <div ref={containerRef} className="h-dvh overflow-auto">
       {/* Pull indicator */}
       <div
         className="flex items-center justify-center overflow-hidden transition-all duration-200"
