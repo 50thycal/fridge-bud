@@ -242,7 +242,7 @@ function LibraryView({
     <>
       {/* Swipe hint */}
       <p className="text-xs text-zinc-600 text-center mb-4">
-        Swipe right to view details{customPatterns.length > 0 ? ', swipe left on custom meals to delete' : ''}
+        Swipe left to delete • Swipe right to edit
       </p>
 
       {/* Custom Meals */}
