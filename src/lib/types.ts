@@ -97,6 +97,7 @@ export interface HouseholdState {
   mealLog: MealLog[];
   lastUpdated: number;
   householdCode?: string; // for sync
+  householdName?: string; // custom name for the household (e.g., "Cal's Kitchen")
 }
 
 // Common Item - predefined item for quick add

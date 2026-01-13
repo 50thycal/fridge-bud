@@ -223,13 +223,16 @@ export async function joinHousehold(code: string): Promise<{ success: boolean; s
   }
 }
 
-// Create a new household
-export async function createHousehold(): Promise<{ success: boolean; code?: string; error?: string }> {
+// Create a new household with optional name
+export async function createHousehold(name?: string): Promise<{ success: boolean; code?: string; error?: string }> {
   const code = generateHouseholdCode();
 
   try {
     const state = getState();
     state.householdCode = code;
+    if (name) {
+      state.householdName = name;
+    }
 
     const response = await fetch('/api/sync', {
       method: 'POST',
@@ -249,6 +252,20 @@ export async function createHousehold(): Promise<{ success: boolean; code?: stri
     console.error('Create household error:', error);
     return { success: false, error: 'Network error' };
   }
+}
+
+// Get household name from state
+export function getHouseholdName(): string | null {
+  const state = getState();
+  return state.householdName || null;
+}
+
+// Update household name
+export async function updateHouseholdName(name: string): Promise<boolean> {
+  const state = getState();
+  state.householdName = name;
+  saveState(state);
+  return true;
 }
 
 // Merge cloud state with local state (cloud wins for conflicts based on lastUpdated)

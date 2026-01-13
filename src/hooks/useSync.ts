@@ -11,6 +11,8 @@ import {
   clearHouseholdCode,
   getState,
   pollForChanges,
+  getHouseholdName,
+  updateHouseholdName,
 } from '@/lib/storage';
 import { HouseholdState } from '@/lib/types';
 
@@ -21,18 +23,20 @@ const POLL_INTERVAL_MS = 15000;
 
 export function useSync(onDataChange?: () => void) {
   const [householdCode, setHouseholdCode] = useState<string | null>(null);
+  const [householdName, setHouseholdName] = useState<string | null>(null);
   const [syncStatus, setSyncStatus] = useState<SyncStatus>('disconnected');
   const [lastSynced, setLastSynced] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
   const pollIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const isPollingRef = useRef(false);
 
-  // Load household code on mount
+  // Load household code and name on mount
   useEffect(() => {
     const code = getHouseholdCode();
     setHouseholdCode(code);
     if (code) {
       setSyncStatus('synced');
+      setHouseholdName(getHouseholdName());
     }
   }, []);
 
@@ -103,15 +107,18 @@ export function useSync(onDataChange?: () => void) {
     };
   }, [householdCode, poll]);
 
-  // Create a new household
-  const create = useCallback(async (): Promise<boolean> => {
+  // Create a new household with optional name
+  const create = useCallback(async (name?: string): Promise<boolean> => {
     setSyncStatus('syncing');
     setError(null);
 
-    const result = await createHousehold();
+    const result = await createHousehold(name);
 
     if (result.success && result.code) {
       setHouseholdCode(result.code);
+      if (name) {
+        setHouseholdName(name);
+      }
       setSyncStatus('synced');
       setLastSynced(Date.now());
       return true;
@@ -169,13 +176,24 @@ export function useSync(onDataChange?: () => void) {
   const disconnect = useCallback(() => {
     clearHouseholdCode();
     setHouseholdCode(null);
+    setHouseholdName(null);
     setSyncStatus('disconnected');
     setLastSynced(null);
     setError(null);
   }, []);
 
+  // Update household name
+  const updateName = useCallback(async (name: string): Promise<boolean> => {
+    const success = await updateHouseholdName(name);
+    if (success) {
+      setHouseholdName(name);
+    }
+    return success;
+  }, []);
+
   return {
     householdCode,
+    householdName,
     syncStatus,
     lastSynced,
     error,
@@ -184,5 +202,6 @@ export function useSync(onDataChange?: () => void) {
     join,
     sync,
     disconnect,
+    updateName,
   };
 }
