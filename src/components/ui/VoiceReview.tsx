@@ -4,10 +4,14 @@ import { useState, useCallback } from 'react';
 import {
   LLMParseResult,
   LLMParsedItem,
+  LLMParsedPattern,
   ReviewableItem,
+  ReviewablePattern,
   DuplicateAction,
   StorageLocation,
   QuantityLevel,
+  EffortLevel,
+  MealType,
   VoiceIntent,
 } from '@/lib/types';
 import { Button } from './Button';
@@ -19,6 +23,7 @@ import { Button } from './Button';
 interface VoiceReviewProps {
   result: LLMParseResult;
   onConfirm: (items: ReviewableItem[]) => void;
+  onConfirmPattern?: (pattern: ReviewablePattern) => void;
   onCancel: () => void;
 }
 
@@ -29,8 +34,44 @@ interface VoiceReviewProps {
 export function VoiceReview({
   result,
   onConfirm,
+  onConfirmPattern,
   onCancel,
 }: VoiceReviewProps) {
+  const isPatternIntent = result.intent === 'create_pattern' || result.intent === 'edit_pattern';
+
+  // For pattern intents, render PatternReview
+  if (isPatternIntent && result.pattern) {
+    return (
+      <PatternReview
+        result={result}
+        pattern={result.pattern}
+        onConfirm={onConfirmPattern}
+        onCancel={onCancel}
+      />
+    );
+  }
+
+  // For inventory intents, render ItemsReview
+  return (
+    <ItemsReview
+      result={result}
+      onConfirm={onConfirm}
+      onCancel={onCancel}
+    />
+  );
+}
+
+// =============================================================================
+// Items Review Component (for add_items/remove_items)
+// =============================================================================
+
+interface ItemsReviewProps {
+  result: LLMParseResult;
+  onConfirm: (items: ReviewableItem[]) => void;
+  onCancel: () => void;
+}
+
+function ItemsReview({ result, onConfirm, onCancel }: ItemsReviewProps) {
   // Convert LLM items to reviewable items with temporary IDs
   const [reviewableItems, setReviewableItems] = useState<ReviewableItem[]>(() =>
     result.items.map((item, index) => ({
@@ -166,6 +207,271 @@ export function VoiceReview({
             disabled={itemsToAdd.length === 0}
           >
             {intentLabel} {itemsToAdd.length > 0 ? `(${itemsToAdd.length})` : ''}
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// =============================================================================
+// Pattern Review Component (for create_pattern/edit_pattern)
+// =============================================================================
+
+interface PatternReviewProps {
+  result: LLMParseResult;
+  pattern: LLMParsedPattern;
+  onConfirm?: (pattern: ReviewablePattern) => void;
+  onCancel: () => void;
+}
+
+function PatternReview({ result, pattern, onConfirm, onCancel }: PatternReviewProps) {
+  const [editedPattern, setEditedPattern] = useState<ReviewablePattern>(() => ({
+    ...pattern,
+    id: `pattern-${Date.now()}`,
+  }));
+  const [isEditing, setIsEditing] = useState(false);
+  const [newIngredient, setNewIngredient] = useState('');
+
+  const handleUpdatePattern = (updates: Partial<ReviewablePattern>) => {
+    setEditedPattern(prev => ({ ...prev, ...updates }));
+  };
+
+  const handleAddIngredient = () => {
+    if (newIngredient.trim()) {
+      setEditedPattern(prev => ({
+        ...prev,
+        ingredients: [...prev.ingredients, newIngredient.trim()],
+      }));
+      setNewIngredient('');
+    }
+  };
+
+  const handleRemoveIngredient = (index: number) => {
+    setEditedPattern(prev => ({
+      ...prev,
+      ingredients: prev.ingredients.filter((_, i) => i !== index),
+    }));
+  };
+
+  const handleToggleMealType = (mealType: MealType) => {
+    setEditedPattern(prev => {
+      const has = prev.mealTypes.includes(mealType);
+      const newTypes = has
+        ? prev.mealTypes.filter(t => t !== mealType)
+        : [...prev.mealTypes, mealType];
+      // Ensure at least one meal type
+      return { ...prev, mealTypes: newTypes.length > 0 ? newTypes : [mealType] };
+    });
+  };
+
+  const handleConfirm = () => {
+    onConfirm?.(editedPattern);
+  };
+
+  const isNewPattern = result.intent === 'create_pattern';
+  const actionLabel = isNewPattern ? 'Create Meal' : 'Update Meal';
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-end justify-center pb-20 px-4">
+      {/* Backdrop */}
+      <div
+        className="absolute inset-0 bg-black/50"
+        onClick={onCancel}
+      />
+
+      {/* Modal content */}
+      <div className="relative w-full max-w-lg bg-zinc-800 rounded-2xl shadow-2xl border border-zinc-700 overflow-hidden flex flex-col max-h-[80vh]">
+        {/* Header */}
+        <div className="px-4 pt-4 pb-2 flex items-center justify-between flex-shrink-0">
+          <div className="flex items-center gap-2">
+            <IntentBadge intent={result.intent} />
+            {pattern.matchedExistingPattern && (
+              <span className="text-yellow-400 text-xs">
+                Editing: {pattern.matchedExistingPattern}
+              </span>
+            )}
+          </div>
+          <button
+            onClick={() => setIsEditing(!isEditing)}
+            className="text-zinc-400 hover:text-white text-sm"
+          >
+            {isEditing ? 'Done' : 'Edit'}
+          </button>
+        </div>
+
+        {/* Raw transcription */}
+        <div className="px-4 pb-3 flex-shrink-0">
+          <p className="text-zinc-500 text-sm italic">
+            &quot;{result.raw}&quot;
+          </p>
+        </div>
+
+        {/* Pattern Details - scrollable */}
+        <div
+          className="flex-1 overflow-y-auto px-4 pb-3 space-y-4 min-h-0 overscroll-contain"
+          style={{ WebkitOverflowScrolling: 'touch' }}
+        >
+          {/* Meal Name */}
+          <div>
+            <label className="text-zinc-400 text-xs uppercase tracking-wide mb-1 block">
+              Meal Name
+            </label>
+            {isEditing ? (
+              <input
+                type="text"
+                value={editedPattern.name}
+                onChange={(e) => handleUpdatePattern({ name: e.target.value })}
+                className="w-full bg-zinc-700 text-white rounded-lg px-3 py-2 text-lg font-medium"
+              />
+            ) : (
+              <p className="text-white text-lg font-medium">{editedPattern.name}</p>
+            )}
+          </div>
+
+          {/* Description */}
+          <div>
+            <label className="text-zinc-400 text-xs uppercase tracking-wide mb-1 block">
+              Description
+            </label>
+            {isEditing ? (
+              <input
+                type="text"
+                value={editedPattern.description}
+                onChange={(e) => handleUpdatePattern({ description: e.target.value })}
+                className="w-full bg-zinc-700 text-white rounded-lg px-3 py-2 text-sm"
+                placeholder="Brief description of the meal"
+              />
+            ) : (
+              <p className="text-zinc-300 text-sm">
+                {editedPattern.description || 'No description'}
+              </p>
+            )}
+          </div>
+
+          {/* Ingredients */}
+          <div>
+            <label className="text-zinc-400 text-xs uppercase tracking-wide mb-2 block">
+              Ingredients ({editedPattern.ingredients.length})
+            </label>
+            <div className="flex flex-wrap gap-2">
+              {editedPattern.ingredients.map((ingredient, index) => (
+                <span
+                  key={index}
+                  className="bg-zinc-700 text-white px-3 py-1.5 rounded-full text-sm flex items-center gap-2"
+                >
+                  {ingredient}
+                  {isEditing && (
+                    <button
+                      onClick={() => handleRemoveIngredient(index)}
+                      className="text-zinc-400 hover:text-red-400"
+                    >
+                      ×
+                    </button>
+                  )}
+                </span>
+              ))}
+              {editedPattern.ingredients.length === 0 && (
+                <span className="text-zinc-500 text-sm">No ingredients specified</span>
+              )}
+            </div>
+            {isEditing && (
+              <div className="flex gap-2 mt-2">
+                <input
+                  type="text"
+                  value={newIngredient}
+                  onChange={(e) => setNewIngredient(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && handleAddIngredient()}
+                  className="flex-1 bg-zinc-700 text-white rounded-lg px-3 py-2 text-sm"
+                  placeholder="Add ingredient..."
+                />
+                <Button variant="ghost" size="sm" onClick={handleAddIngredient}>
+                  Add
+                </Button>
+              </div>
+            )}
+          </div>
+
+          {/* Effort Level */}
+          <div>
+            <label className="text-zinc-400 text-xs uppercase tracking-wide mb-2 block">
+              Effort Level
+            </label>
+            <div className="flex gap-2">
+              {(['minimal', 'moderate', 'involved'] as EffortLevel[]).map(effort => (
+                <button
+                  key={effort}
+                  onClick={() => isEditing && handleUpdatePattern({ effort })}
+                  disabled={!isEditing}
+                  className={`flex-1 py-2 rounded-lg text-sm font-medium transition-colors ${
+                    editedPattern.effort === effort
+                      ? 'bg-blue-600 text-white'
+                      : isEditing
+                        ? 'bg-zinc-700 text-zinc-300 hover:bg-zinc-600'
+                        : 'bg-zinc-700 text-zinc-400'
+                  }`}
+                >
+                  {effort.charAt(0).toUpperCase() + effort.slice(1)}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Meal Types */}
+          <div>
+            <label className="text-zinc-400 text-xs uppercase tracking-wide mb-2 block">
+              Meal Types
+            </label>
+            <div className="flex gap-2 flex-wrap">
+              {(['breakfast', 'lunch', 'dinner', 'snack'] as MealType[]).map(mealType => (
+                <button
+                  key={mealType}
+                  onClick={() => isEditing && handleToggleMealType(mealType)}
+                  disabled={!isEditing}
+                  className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                    editedPattern.mealTypes.includes(mealType)
+                      ? 'bg-green-600 text-white'
+                      : isEditing
+                        ? 'bg-zinc-700 text-zinc-300 hover:bg-zinc-600'
+                        : 'bg-zinc-700 text-zinc-400'
+                  }`}
+                >
+                  {mealType.charAt(0).toUpperCase() + mealType.slice(1)}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Warnings */}
+        {result.warnings.length > 0 && (
+          <div className="px-4 pb-3 flex-shrink-0">
+            <div className="bg-yellow-900/30 rounded-lg p-2 text-yellow-400 text-xs">
+              {result.warnings.map((warning, i) => (
+                <p key={i}>{warning}</p>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Action buttons */}
+        <div className="px-4 pb-4 flex gap-2 flex-shrink-0 border-t border-zinc-700 pt-3">
+          <Button
+            variant="ghost"
+            size="md"
+            onClick={onCancel}
+            className="flex-1"
+          >
+            Cancel
+          </Button>
+          <Button
+            variant="primary"
+            size="md"
+            onClick={handleConfirm}
+            className="flex-1"
+            disabled={!editedPattern.name.trim()}
+          >
+            {actionLabel}
           </Button>
         </div>
       </div>

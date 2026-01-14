@@ -7,36 +7,52 @@ import {
   StorageLocation,
   QuantityLevel,
   InventoryItem,
+  MealPattern,
   LLMParsedItem,
+  LLMParsedPattern,
   LLMParseResult,
   VoiceIntent,
+  EffortLevel,
+  MealType,
 } from '@/lib/types';
 
 // =============================================================================
 // System Prompt
 // =============================================================================
 
-export const LLM_SYSTEM_PROMPT = `You are a kitchen inventory assistant for a fridge-mounted household terminal. Parse voice commands about food items.
+export const LLM_SYSTEM_PROMPT = `You are a kitchen assistant for a fridge-mounted household terminal. Parse voice commands about EITHER inventory items OR meal patterns.
 
-RULES:
-1. Extract the primary action: "add_items" (putting items into storage), "remove_items" (using/discarding items), or "unknown"
-2. Extract ALL food items mentioned, even if grammar is imperfect or items are listed without commas
-3. For each item, determine:
-   - name: Canonical name (e.g., "Chicken breast" not "some chicken")
-   - matchedKnownItem: If it matches a known item, use that exact name; otherwise null
-   - category: protein | vegetable | fruit | dairy | grain | condiment | spice | beverage | frozen | other
-   - location: fridge | freezer | pantry (infer from item type using typical storage, NOT what user says if incorrect)
-   - quantity: plenty | some | low (default: "plenty" for adds, infer from context)
-   - confidence: 0.0-1.0 (how certain you are about this extraction)
-   - possibleDuplicate: true if item appears to already exist in the provided inventory
-   - duplicateItemId: the ID of the existing inventory item if duplicate, otherwise null
-   - reasoning: brief explanation of your decisions (especially for location overrides or duplicates)
-   - locationOverridden: true if you changed location from what user said to what's typical
-   - originalLocation: only set if locationOverridden is true, the location user requested
-4. Use KNOWN ITEMS list for matching - prefer exact matches when possible
-5. For items not in known list, infer category and typical location based on food type
-6. Handle natural speech patterns like "milk eggs cumin and apples" or "some chicken, rice"
-7. Spices ALWAYS go in pantry, dairy ALWAYS in fridge, frozen items ALWAYS in freezer
+CRITICAL: DETERMINE THE INTENT FIRST - This app handles TWO different things:
+
+1. **INVENTORY** (add_items/remove_items): User is adding/removing physical food items to storage locations
+   - Signals: "put X in the fridge", "add X to pantry", "we got X", "used the X", "finished the X"
+   - Example: "add salmon and rice to the fridge" → add_items (putting physical items in storage)
+   - Example: "we used the chicken" → remove_items
+
+2. **MEAL PATTERNS** (create_pattern/edit_pattern): User is creating/editing a meal recipe with its ingredients
+   - Signals: "add/create/make a [meal name] meal/dish/recipe", "new meal called X", "X meal needs/has/with [ingredients]"
+   - Example: "add salmon pasta with salmon, orzo, and garlic" → create_pattern (creating a meal called "salmon pasta")
+   - Example: "let's add the chicken stir fry it needs chicken rice and vegetables" → create_pattern
+   - Example: "update the pasta night to include shrimp" → edit_pattern
+
+KEY DISTINCTION:
+- "add salmon to the fridge" = add_items (putting salmon IN storage)
+- "add salmon pasta meal with salmon and orzo" = create_pattern (creating a meal CALLED "salmon pasta" that USES salmon/orzo)
+- When ingredients are listed FOR a meal name, it's a pattern. When items are being PUT somewhere, it's inventory.
+
+RULES FOR INVENTORY (add_items/remove_items):
+1. Extract ALL food items mentioned
+2. For each item determine: name, category, location, quantity, confidence
+3. Use typical storage locations (spices→pantry, dairy→fridge, frozen→freezer)
+4. Check for duplicates in current inventory
+5. Default quantity is "plenty" for adds
+
+RULES FOR MEAL PATTERNS (create_pattern/edit_pattern):
+1. Extract the meal/recipe name (e.g., "salmon pasta", "chicken stir fry")
+2. Extract the ingredient list - these are what the meal NEEDS, not items to add to storage
+3. Check if the meal name matches an existing pattern (for editing)
+4. Infer effort level: minimal (5-10 min), moderate (15-30 min), involved (30+ min)
+5. Infer meal types: breakfast, lunch, dinner, snack based on the dish
 
 OUTPUT FORMAT: Valid JSON only, no markdown, no explanation outside JSON.`;
 
@@ -46,7 +62,8 @@ OUTPUT FORMAT: Valid JSON only, no markdown, no explanation outside JSON.`;
 
 export function buildUserPrompt(
   transcription: string,
-  currentInventory: InventoryItem[]
+  currentInventory: InventoryItem[],
+  existingPatterns: MealPattern[] = []
 ): string {
   // Build known items list with their default locations
   const knownItemsList = commonItems
@@ -60,19 +77,34 @@ export function buildUserPrompt(
         .join('\n')
     : '(empty)';
 
-  return `KNOWN ITEMS (with default locations):
+  // Build existing meal patterns list
+  const patternsList = existingPatterns.length > 0
+    ? existingPatterns
+        .map(p => `- "${p.name}" (id: ${p.id})`)
+        .join('\n')
+    : '(none)';
+
+  return `KNOWN FOOD ITEMS (for inventory matching):
 ${knownItemsList}
 
-CURRENT INVENTORY:
+CURRENT INVENTORY (check for duplicates):
 ${inventoryList}
+
+EXISTING MEAL PATTERNS (check for editing):
+${patternsList}
 
 VOICE INPUT: "${transcription}"
 
-Parse this and return JSON matching this exact schema:
+STEP 1: Determine if this is about INVENTORY or a MEAL PATTERN
+- If listing items to PUT in storage → add_items/remove_items, populate "items" array
+- If creating/editing a meal/dish/recipe → create_pattern/edit_pattern, populate "pattern" object
+
+STEP 2: Return JSON matching this schema:
 {
-  "intent": "add_items" | "remove_items" | "unknown",
+  "intent": "add_items" | "remove_items" | "create_pattern" | "edit_pattern" | "unknown",
   "confidence": number between 0 and 1,
   "items": [
+    // ONLY populate for add_items/remove_items intent
     {
       "name": "string - canonical item name",
       "matchedKnownItem": "string or null - exact name from known items if matched",
@@ -87,9 +119,25 @@ Parse this and return JSON matching this exact schema:
       "originalLocation": "fridge|freezer|pantry or null if not overridden"
     }
   ],
+  "pattern": {
+    // ONLY populate for create_pattern/edit_pattern intent
+    "name": "string - meal name like 'Salmon Pasta' or 'Chicken Stir Fry'",
+    "matchedExistingPattern": "string or null - name of existing pattern if editing",
+    "matchedExistingId": "string or null - id of existing pattern if editing",
+    "description": "string - brief description of the meal",
+    "ingredients": ["array of ingredient names this meal needs"],
+    "effort": "minimal|moderate|involved",
+    "mealTypes": ["breakfast", "lunch", "dinner", "snack"],
+    "confidence": number between 0 and 1,
+    "reasoning": "string explaining why this is a meal pattern and your decisions"
+  },
   "extractedLocation": "fridge|freezer|pantry or null if not specified",
   "warnings": ["array of strings for any issues or notes"]
-}`;
+}
+
+IMPORTANT:
+- For add_items/remove_items: populate "items", leave "pattern" as null
+- For create_pattern/edit_pattern: populate "pattern", leave "items" as empty array []`;
 }
 
 // =============================================================================
@@ -104,6 +152,8 @@ const VALID_CATEGORIES: IngredientCategory[] = [
 const VALID_LOCATIONS: StorageLocation[] = ['fridge', 'freezer', 'pantry'];
 const VALID_QUANTITIES: QuantityLevel[] = ['plenty', 'some', 'low'];
 const VALID_INTENTS: VoiceIntent[] = ['add_items', 'remove_items', 'create_pattern', 'edit_pattern', 'unknown'];
+const VALID_EFFORT_LEVELS: EffortLevel[] = ['minimal', 'moderate', 'involved'];
+const VALID_MEAL_TYPES: MealType[] = ['breakfast', 'lunch', 'dinner', 'snack'];
 
 export function validateLLMResponse(response: unknown): LLMParseResult | null {
   if (!response || typeof response !== 'object') {
@@ -179,10 +229,54 @@ export function validateLLMResponse(response: unknown): LLMParseResult | null {
     ? data.warnings.filter((w): w is string => typeof w === 'string')
     : [];
 
+  // Validate pattern (for create_pattern/edit_pattern intents)
+  let validatedPattern: LLMParsedPattern | undefined = undefined;
+  const intent = data.intent as VoiceIntent;
+
+  if ((intent === 'create_pattern' || intent === 'edit_pattern') && data.pattern && typeof data.pattern === 'object') {
+    const patternData = data.pattern as Record<string, unknown>;
+
+    // Pattern name is required
+    if (typeof patternData.name === 'string' && patternData.name.trim()) {
+      // Validate effort with fallback
+      const effort = VALID_EFFORT_LEVELS.includes(patternData.effort as EffortLevel)
+        ? (patternData.effort as EffortLevel)
+        : 'moderate';
+
+      // Validate meal types with fallback
+      let mealTypes: MealType[] = Array.isArray(patternData.mealTypes)
+        ? patternData.mealTypes.filter((mt): mt is MealType => VALID_MEAL_TYPES.includes(mt as MealType))
+        : ['dinner'];
+
+      // Ensure at least one meal type
+      if (mealTypes.length === 0) {
+        mealTypes = ['dinner'];
+      }
+
+      // Validate ingredients array
+      const ingredients = Array.isArray(patternData.ingredients)
+        ? patternData.ingredients.filter((ing): ing is string => typeof ing === 'string' && ing.trim().length > 0)
+        : [];
+
+      validatedPattern = {
+        name: patternData.name.trim(),
+        matchedExistingPattern: typeof patternData.matchedExistingPattern === 'string' ? patternData.matchedExistingPattern : null,
+        matchedExistingId: typeof patternData.matchedExistingId === 'string' ? patternData.matchedExistingId : null,
+        description: typeof patternData.description === 'string' ? patternData.description : '',
+        ingredients,
+        effort,
+        mealTypes,
+        confidence: typeof patternData.confidence === 'number' ? Math.min(1, Math.max(0, patternData.confidence)) : 0.7,
+        reasoning: typeof patternData.reasoning === 'string' ? patternData.reasoning : '',
+      };
+    }
+  }
+
   return {
-    intent: data.intent as VoiceIntent,
+    intent,
     confidence: data.confidence,
     items: validatedItems,
+    pattern: validatedPattern,
     extractedLocation,
     warnings,
     raw: '', // Will be set by caller
@@ -254,10 +348,27 @@ export function convertKeywordResultToLLMFormat(
     };
   });
 
+  // Convert pattern if present (for create_pattern/edit_pattern intents)
+  let pattern: LLMParsedPattern | undefined = undefined;
+  if (keywordResult.pattern && (keywordResult.intent === 'create_pattern' || keywordResult.intent === 'edit_pattern')) {
+    pattern = {
+      name: keywordResult.pattern.name || keywordResult.pattern.targetPattern || 'New Meal',
+      matchedExistingPattern: keywordResult.pattern.targetPattern || null,
+      matchedExistingId: null, // Keyword parser doesn't have access to pattern IDs
+      description: '',
+      ingredients: keywordResult.pattern.addIngredients || [],
+      effort: 'moderate',
+      mealTypes: ['dinner'],
+      confidence: keywordResult.confidence,
+      reasoning: 'Parsed via keyword fallback parser',
+    };
+  }
+
   return {
     intent: keywordResult.intent,
     confidence: keywordResult.confidence,
     items,
+    pattern,
     extractedLocation: keywordResult.extractedLocation || null,
     warnings: keywordResult.confidence < 0.5 ? ['Low confidence - parsed with fallback method'] : [],
     raw: keywordResult.raw,

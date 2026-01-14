@@ -4,11 +4,12 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useVoiceInput } from '@/hooks/useVoiceInput';
 import { useInventory } from '@/hooks/useInventory';
+import { useMealPatterns } from '@/hooks/useMealPatterns';
 import { VoiceMiniButton } from './VoiceButton';
 import { RecordingOverlay } from './VoiceConfirmation';
 import { VoiceReview, ProcessingOverlay } from './VoiceReview';
 import { getRecentItemNames } from '@/lib/storage';
-import { ReviewableItem, LLMParseResult } from '@/lib/types';
+import { ReviewableItem, ReviewablePattern, LLMParseResult, IngredientSlot } from '@/lib/types';
 
 const leftNavItems = [
   { href: '/', label: 'Home', icon: HomeIcon },
@@ -23,6 +24,7 @@ const rightNavItems = [
 export function BottomNav() {
   const pathname = usePathname();
   const { items, add, update, remove } = useInventory();
+  const { patterns, add: addPattern, update: updatePattern } = useMealPatterns();
 
   const {
     state,
@@ -37,6 +39,7 @@ export function BottomNav() {
   } = useVoiceInput({
     recentItems: getRecentItemNames(),
     currentInventory: items,
+    existingPatterns: patterns,
     onError: (err) => console.error('Voice error:', err),
   });
 
@@ -87,6 +90,59 @@ export function BottomNav() {
     clearResult();
   }
 
+  function handlePatternConfirm(reviewedPattern: ReviewablePattern) {
+    // Convert voice-parsed ingredients to ingredient slots
+    const requiredSlots: IngredientSlot[] = reviewedPattern.ingredients.map(ingredient => ({
+      role: ingredient.toLowerCase(),
+      specificItems: [ingredient],
+      optional: false,
+    }));
+
+    if (parsedResult?.intent === 'create_pattern') {
+      // Create new meal pattern
+      addPattern({
+        name: reviewedPattern.name,
+        description: reviewedPattern.description,
+        requiredSlots,
+        flexibleSlots: [],
+        optionalUpgrades: [],
+        effort: reviewedPattern.effort,
+        mealTypes: reviewedPattern.mealTypes,
+        tags: [],
+      });
+    } else if (parsedResult?.intent === 'edit_pattern') {
+      // Update existing pattern
+      const existingId = reviewedPattern.matchedExistingId;
+      if (existingId) {
+        // Find existing pattern to preserve its structure
+        const existing = patterns.find(p => p.id === existingId);
+        if (existing) {
+          updatePattern(existingId, {
+            name: reviewedPattern.name,
+            description: reviewedPattern.description,
+            requiredSlots,
+            effort: reviewedPattern.effort,
+            mealTypes: reviewedPattern.mealTypes,
+          });
+        }
+      } else {
+        // No matching pattern found, create as new
+        addPattern({
+          name: reviewedPattern.name,
+          description: reviewedPattern.description,
+          requiredSlots,
+          flexibleSlots: [],
+          optionalUpgrades: [],
+          effort: reviewedPattern.effort,
+          mealTypes: reviewedPattern.mealTypes,
+          tags: [],
+        });
+      }
+    }
+
+    clearResult();
+  }
+
   function handleMicClick() {
     if (state === 'recording') {
       stopRecording();
@@ -116,6 +172,7 @@ export function BottomNav() {
         <VoiceReview
           result={parsedResult}
           onConfirm={handleVoiceConfirm}
+          onConfirmPattern={handlePatternConfirm}
           onCancel={clearResult}
         />
       )}

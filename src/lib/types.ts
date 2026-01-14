@@ -174,9 +174,27 @@ export interface LLMParseResult {
   intent: VoiceIntent;
   confidence: number;
   items: LLMParsedItem[];
+  pattern?: LLMParsedPattern;
   extractedLocation: StorageLocation | null;
   warnings: string[];
   raw: string;
+}
+
+// LLM-parsed meal pattern for voice input
+export interface LLMParsedPattern {
+  name: string;
+  matchedExistingPattern: string | null; // existing pattern name if editing
+  matchedExistingId: string | null; // existing pattern ID if editing
+  description: string;
+  ingredients: string[]; // simplified ingredient list from voice
+  effort: EffortLevel;
+  mealTypes: MealType[];
+  confidence: number;
+  reasoning: string;
+}
+
+export interface ReviewablePattern extends LLMParsedPattern {
+  id: string; // temporary id for tracking in review UI
 }
 
 export type DuplicateAction = 'add' | 'update_quantity' | 'skip';

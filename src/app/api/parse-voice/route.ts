@@ -7,7 +7,7 @@ import {
   parseLLMResponse,
   getFallbackParseResult,
 } from '@/lib/voice/llm-parser';
-import { InventoryItem, LLMParseResult } from '@/lib/types';
+import { InventoryItem, MealPattern, LLMParseResult } from '@/lib/types';
 
 // =============================================================================
 // Configuration
@@ -24,6 +24,7 @@ const REQUEST_TIMEOUT_MS = 15000; // 15 second timeout
 interface ParseVoiceRequest {
   transcription: string;
   currentInventory: InventoryItem[];
+  existingPatterns?: MealPattern[];
   recentItems?: string[];
 }
 
@@ -53,7 +54,7 @@ export async function POST(
 
     // Parse request body
     const body = await request.json() as ParseVoiceRequest;
-    const { transcription, currentInventory = [], recentItems = [] } = body;
+    const { transcription, currentInventory = [], existingPatterns = [], recentItems = [] } = body;
 
     if (!transcription || typeof transcription !== 'string') {
       return NextResponse.json(
@@ -62,8 +63,8 @@ export async function POST(
       );
     }
 
-    // Build the prompt
-    const userPrompt = buildUserPrompt(transcription, currentInventory);
+    // Build the prompt with inventory and existing patterns
+    const userPrompt = buildUserPrompt(transcription, currentInventory, existingPatterns);
 
     // Call OpenAI API with timeout
     const controller = new AbortController();
