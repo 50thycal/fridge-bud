@@ -1,18 +1,24 @@
 'use client';
 
 import { useState, useCallback, useRef } from 'react';
-import { VoiceState, ParsedVoiceInput, TranscriptionResult } from '@/lib/types';
+import {
+  VoiceState,
+  TranscriptionResult,
+  LLMParseResult,
+  InventoryItem,
+} from '@/lib/types';
 import { VoiceRecorder, isVoiceRecordingSupported } from '@/lib/voice/recorder';
-import { parseVoiceInput } from '@/lib/voice/parser';
+import { getFallbackParseResult } from '@/lib/voice/llm-parser';
 
 // =============================================================================
 // Types
 // =============================================================================
 
 export interface UseVoiceInputOptions {
-  onResult?: (result: ParsedVoiceInput) => void;
+  onResult?: (result: LLMParseResult) => void;
   onError?: (error: string) => void;
   recentItems?: string[];
+  currentInventory?: InventoryItem[];
 }
 
 export interface UseVoiceInputReturn {
@@ -20,7 +26,7 @@ export interface UseVoiceInputReturn {
   state: VoiceState;
   elapsedMs: number;
   error: string | null;
-  parsedResult: ParsedVoiceInput | null;
+  parsedResult: LLMParseResult | null;
   transcription: string | null;
 
   // Actions
@@ -39,17 +45,21 @@ export interface UseVoiceInputReturn {
 // =============================================================================
 
 export function useVoiceInput(options: UseVoiceInputOptions = {}): UseVoiceInputReturn {
-  const { onResult, onError, recentItems = [] } = options;
+  const { onResult, onError, recentItems = [], currentInventory = [] } = options;
 
   // State
   const [state, setState] = useState<VoiceState>('idle');
   const [elapsedMs, setElapsedMs] = useState(0);
   const [error, setError] = useState<string | null>(null);
-  const [parsedResult, setParsedResult] = useState<ParsedVoiceInput | null>(null);
+  const [parsedResult, setParsedResult] = useState<LLMParseResult | null>(null);
   const [transcription, setTranscription] = useState<string | null>(null);
 
   // Refs
   const recorderRef = useRef<VoiceRecorder | null>(null);
+  const inventoryRef = useRef<InventoryItem[]>(currentInventory);
+
+  // Keep inventory ref updated
+  inventoryRef.current = currentInventory;
 
   // =============================================================================
   // Transcription API Call
@@ -70,6 +80,42 @@ export function useVoiceInput(options: UseVoiceInputOptions = {}): UseVoiceInput
     }
 
     return response.json();
+  }, []);
+
+  // =============================================================================
+  // LLM Parsing API Call
+  // =============================================================================
+
+  const parseWithLLM = useCallback(async (
+    transcriptionText: string,
+    inventory: InventoryItem[],
+    recent: string[]
+  ): Promise<LLMParseResult> => {
+    try {
+      const response = await fetch('/api/parse-voice', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          transcription: transcriptionText,
+          currentInventory: inventory,
+          recentItems: recent,
+        }),
+      });
+
+      if (!response.ok) {
+        // If API fails, use fallback
+        console.warn('LLM parsing API failed, using fallback');
+        return getFallbackParseResult(transcriptionText, inventory, recent);
+      }
+
+      return response.json();
+    } catch (err) {
+      // Network error - use fallback
+      console.warn('LLM parsing failed, using fallback:', err);
+      return getFallbackParseResult(transcriptionText, inventory, recent);
+    }
   }, []);
 
   // =============================================================================
@@ -107,10 +153,17 @@ export function useVoiceInput(options: UseVoiceInputOptions = {}): UseVoiceInput
             const transcriptionResult = await transcribeAudio(result.audioBlob);
             setTranscription(transcriptionResult.text);
 
-            // Parse the transcription
-            const parsed = parseVoiceInput(transcriptionResult.text, recentItems);
+            // Now parse with LLM
+            setState('parsing');
+
+            const parsed = await parseWithLLM(
+              transcriptionResult.text,
+              inventoryRef.current,
+              recentItems
+            );
+
             setParsedResult(parsed);
-            setState('confirming');
+            setState('reviewing');
           } catch (err) {
             const errorMsg = err instanceof Error ? err.message : 'Failed to process audio';
             setError(errorMsg);
@@ -136,7 +189,7 @@ export function useVoiceInput(options: UseVoiceInputOptions = {}): UseVoiceInput
       setState('error');
       onError?.(errorMsg);
     }
-  }, [transcribeAudio, recentItems, onError]);
+  }, [transcribeAudio, parseWithLLM, recentItems, onError]);
 
   const stopRecording = useCallback(() => {
     if (recorderRef.current) {
