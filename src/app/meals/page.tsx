@@ -12,7 +12,7 @@ import { BottomNav } from '@/components/ui/BottomNav';
 import { AddMealSheet } from '@/components/meals/AddMealSheet';
 import { EditMealSheet } from '@/components/meals/EditMealSheet';
 import { MealPatternCard } from '@/components/meals/MealPatternCard';
-import { MealOpportunity, MealPattern, IngredientSlot } from '@/lib/types';
+import { MealOpportunity, MealPattern, IngredientSlot, ComponentStatus } from '@/lib/types';
 
 type ViewMode = 'suggestions' | 'library';
 
@@ -266,7 +266,7 @@ function MealOpportunityCard({
   opportunity: MealOpportunity;
   onAddToGrocery: () => void;
 }) {
-  const { pattern, score, satisfied, missing, usesAgingItems, frictionLevel } = opportunity;
+  const { pattern, score, satisfied, missing, usesAgingItems, frictionLevel, componentStatuses } = opportunity;
   const [swipeX, setSwipeX] = useState(0);
   const [isSwiping, setIsSwiping] = useState(false);
   const [showAdded, setShowAdded] = useState(false);
@@ -422,6 +422,15 @@ function MealOpportunityCard({
           </div>
         )}
 
+        {/* Component statuses (dressings, marinades, sauces) */}
+        {componentStatuses && componentStatuses.length > 0 && (
+          <div className="flex flex-wrap gap-2 mt-3 pt-3 border-t border-zinc-800">
+            {componentStatuses.map((status) => (
+              <ComponentStatusBadge key={status.component.name} status={status} />
+            ))}
+          </div>
+        )}
+
         {/* Tags */}
         <div className="flex flex-wrap gap-1 mt-3">
           {pattern.tags.slice(0, 3).map((tag) => (
@@ -434,6 +443,32 @@ function MealOpportunityCard({
           </span>
         </div>
       </div>
+    </div>
+  );
+}
+
+// Component Status Badge (for dressings, marinades, sauces)
+function ComponentStatusBadge({ status }: { status: ComponentStatus }) {
+  const { component, missing, ready } = status;
+
+  if (ready) {
+    return (
+      <div className="flex items-center gap-1.5 text-xs bg-green-900/30 text-green-400 px-2 py-1 rounded-lg">
+        <span className="text-green-500">✓</span>
+        <span>{component.name}</span>
+      </div>
+    );
+  }
+
+  // Not ready - show what's missing
+  const missingNames = missing.map(m => m.specificItems?.[0] || m.role).join(', ');
+
+  return (
+    <div className="flex items-center gap-1.5 text-xs bg-zinc-800 text-zinc-400 px-2 py-1 rounded-lg">
+      <span className="text-zinc-500">○</span>
+      <span>{component.name}</span>
+      <span className="text-zinc-600">·</span>
+      <span className="text-yellow-500/80">need {missingNames}</span>
     </div>
   );
 }

@@ -45,6 +45,13 @@ export interface IngredientSlot {
   optional: boolean;
 }
 
+// Meal Component - a sub-recipe like a dressing, marinade, or sauce
+// These are tracked separately from main meal readiness
+export interface MealComponent {
+  name: string; // e.g., "Lemon-Dijon Dressing", "Herb Marinade"
+  slots: IngredientSlot[]; // ingredients needed for this component
+}
+
 // Meal Pattern - a template for a meal (not a recipe)
 export interface MealPattern {
   id: string;
@@ -53,9 +60,18 @@ export interface MealPattern {
   requiredSlots: IngredientSlot[];
   flexibleSlots: IngredientSlot[];
   optionalUpgrades: IngredientSlot[];
+  components?: MealComponent[]; // optional sub-recipes (dressings, marinades, sauces)
   effort: EffortLevel;
   mealTypes: MealType[];
   tags: string[];
+}
+
+// Component Status - tracks whether a sub-recipe can be made
+export interface ComponentStatus {
+  component: MealComponent;
+  satisfied: { slot: IngredientSlot; item: InventoryItem }[];
+  missing: IngredientSlot[];
+  ready: boolean; // true if all component slots are satisfied
 }
 
 // Meal Opportunity - computed result showing what's possible
@@ -66,6 +82,7 @@ export interface MealOpportunity {
   missing: IngredientSlot[];
   usesAgingItems: InventoryItem[];
   frictionLevel: 'ready' | 'oneAway' | 'needsShopping';
+  componentStatuses?: ComponentStatus[]; // status of optional sub-recipes
 }
 
 // Grocery Item - derived shopping list item

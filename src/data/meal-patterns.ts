@@ -316,6 +316,48 @@ export const defaultMealPatterns: MealPattern[] = [
     mealTypes: ['lunch', 'dinner'],
     tags: ['filling', 'customizable', 'healthy'],
   },
+
+  {
+    id: 'mediterranean-chicken-salad',
+    name: 'Mediterranean Chicken Salad',
+    description: 'Fresh, hearty salad with lemon-herb chicken and homemade dressing',
+    requiredSlots: [
+      { role: 'protein', specificItems: ['Chicken breast', 'Chicken thighs', 'Chicken'], optional: false },
+      { role: 'greens', specificItems: ['Kale', 'Spinach', 'Mixed greens'], optional: false },
+    ],
+    flexibleSlots: [
+      { role: 'vegetables', specificItems: ['Red onion', 'Onions', 'Cucumber', 'Cherry tomatoes', 'Tomatoes', 'Red pepper', 'Bell peppers'], optional: true },
+      { role: 'cheese', specificItems: ['Goat cheese', 'Feta cheese'], optional: true },
+    ],
+    optionalUpgrades: [
+      { role: 'olives', specificItems: ['Olives', 'Kalamata olives'], optional: true },
+      { role: 'nuts', specificItems: ['Pine nuts', 'Almonds', 'Walnuts'], optional: true },
+    ],
+    components: [
+      {
+        name: 'Lemon-Dijon Dressing',
+        slots: [
+          { role: 'citrus', specificItems: ['Lemons', 'Lemon juice'], optional: false },
+          { role: 'mustard', specificItems: ['Dijon mustard', 'Mustard'], optional: false },
+          { role: 'garlic', specificItems: ['Garlic'], optional: false },
+          { role: 'oil', specificItems: ['Olive oil'], optional: true },
+          { role: 'sweetener', specificItems: ['Honey'], optional: true },
+        ],
+      },
+      {
+        name: 'Herb Marinade',
+        slots: [
+          { role: 'citrus', specificItems: ['Lemons', 'Lemon juice'], optional: false },
+          { role: 'garlic', specificItems: ['Garlic'], optional: false },
+          { role: 'herbs', specificItems: ['Thyme', 'Oregano', 'Basil', 'Dill', 'Fresh herbs', 'Italian herbs'], optional: false },
+          { role: 'oil', specificItems: ['Olive oil'], optional: true },
+        ],
+      },
+    ],
+    effort: 'moderate',
+    mealTypes: ['lunch', 'dinner'],
+    tags: ['healthy', 'fresh', 'mediterranean', 'salad'],
+  },
 ];
 
 // Get patterns by meal type
