@@ -1,4 +1,4 @@
-import { InventoryItem, MealPattern, MealOpportunity, IngredientSlot } from './types';
+import { InventoryItem, MealPattern, MealOpportunity, IngredientSlot, MealComponent, ComponentStatus } from './types';
 import { defaultMealPatterns } from '@/data/meal-patterns';
 
 // Check if an inventory item satisfies a slot
@@ -60,6 +60,32 @@ function getAgingItems(inventory: InventoryItem[]): InventoryItem[] {
   return inventory.filter(item =>
     item.freshness === 'useSoon' || item.freshness === 'bad'
   );
+}
+
+// Calculate status for a single meal component (dressing, marinade, etc.)
+function calculateComponentStatus(
+  component: MealComponent,
+  inventory: InventoryItem[]
+): ComponentStatus {
+  const satisfied: ComponentStatus['satisfied'] = [];
+  const missing: IngredientSlot[] = [];
+
+  for (const slot of component.slots) {
+    const matchingItems = findItemsForSlot(slot, inventory);
+
+    if (matchingItems.length > 0) {
+      satisfied.push({ slot, item: matchingItems[0] });
+    } else if (!slot.optional) {
+      missing.push(slot);
+    }
+  }
+
+  return {
+    component,
+    satisfied,
+    missing,
+    ready: missing.length === 0,
+  };
 }
 
 // Calculate meal opportunities
@@ -131,6 +157,11 @@ export function calculateOpportunities(
       pattern.requiredSlots.length
     );
 
+    // Calculate component statuses (for dressings, marinades, sauces)
+    const componentStatuses = pattern.components?.map(component =>
+      calculateComponentStatus(component, inventory)
+    );
+
     opportunities.push({
       pattern,
       score,
@@ -138,6 +169,7 @@ export function calculateOpportunities(
       missing,
       usesAgingItems: usesAgingItemsList,
       frictionLevel,
+      componentStatuses,
     });
   }
 
