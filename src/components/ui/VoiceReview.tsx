@@ -80,8 +80,15 @@ export function VoiceReview({
   const intentLabel = getIntentLabel(result.intent);
 
   return (
-    <div className="fixed inset-x-0 bottom-20 mx-4 z-50 max-h-[70vh] flex flex-col">
-      <div className="bg-zinc-800 rounded-2xl shadow-2xl border border-zinc-700 overflow-hidden flex flex-col max-h-full">
+    <div className="fixed inset-0 z-50 flex items-end justify-center pb-20 px-4">
+      {/* Backdrop */}
+      <div
+        className="absolute inset-0 bg-black/50"
+        onClick={onCancel}
+      />
+
+      {/* Modal content */}
+      <div className="relative w-full max-w-lg bg-zinc-800 rounded-2xl shadow-2xl border border-zinc-700 overflow-hidden flex flex-col max-h-[70vh]">
         {/* Header */}
         <div className="px-4 pt-4 pb-2 flex items-center justify-between flex-shrink-0">
           <div className="flex items-center gap-2">
@@ -105,7 +112,10 @@ export function VoiceReview({
         </div>
 
         {/* Items list - scrollable */}
-        <div className="flex-1 overflow-y-auto px-4 pb-3 space-y-2 min-h-0">
+        <div
+          className="flex-1 overflow-y-auto px-4 pb-3 space-y-2 min-h-0 overscroll-contain"
+          style={{ WebkitOverflowScrolling: 'touch' }}
+        >
           {reviewableItems.map(item => (
             <ItemCard
               key={item.id}
