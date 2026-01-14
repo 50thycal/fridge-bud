@@ -6,6 +6,7 @@ import {
   TranscriptionResult,
   LLMParseResult,
   InventoryItem,
+  MealPattern,
 } from '@/lib/types';
 import { VoiceRecorder, isVoiceRecordingSupported } from '@/lib/voice/recorder';
 import { getFallbackParseResult } from '@/lib/voice/llm-parser';
@@ -19,6 +20,7 @@ export interface UseVoiceInputOptions {
   onError?: (error: string) => void;
   recentItems?: string[];
   currentInventory?: InventoryItem[];
+  existingPatterns?: MealPattern[];
 }
 
 export interface UseVoiceInputReturn {
@@ -45,7 +47,7 @@ export interface UseVoiceInputReturn {
 // =============================================================================
 
 export function useVoiceInput(options: UseVoiceInputOptions = {}): UseVoiceInputReturn {
-  const { onResult, onError, recentItems = [], currentInventory = [] } = options;
+  const { onResult, onError, recentItems = [], currentInventory = [], existingPatterns = [] } = options;
 
   // State
   const [state, setState] = useState<VoiceState>('idle');
@@ -57,9 +59,11 @@ export function useVoiceInput(options: UseVoiceInputOptions = {}): UseVoiceInput
   // Refs
   const recorderRef = useRef<VoiceRecorder | null>(null);
   const inventoryRef = useRef<InventoryItem[]>(currentInventory);
+  const patternsRef = useRef<MealPattern[]>(existingPatterns);
 
-  // Keep inventory ref updated
+  // Keep refs updated
   inventoryRef.current = currentInventory;
+  patternsRef.current = existingPatterns;
 
   // =============================================================================
   // Transcription API Call
@@ -89,6 +93,7 @@ export function useVoiceInput(options: UseVoiceInputOptions = {}): UseVoiceInput
   const parseWithLLM = useCallback(async (
     transcriptionText: string,
     inventory: InventoryItem[],
+    patterns: MealPattern[],
     recent: string[]
   ): Promise<LLMParseResult> => {
     try {
@@ -100,6 +105,7 @@ export function useVoiceInput(options: UseVoiceInputOptions = {}): UseVoiceInput
         body: JSON.stringify({
           transcription: transcriptionText,
           currentInventory: inventory,
+          existingPatterns: patterns,
           recentItems: recent,
         }),
       });
@@ -159,6 +165,7 @@ export function useVoiceInput(options: UseVoiceInputOptions = {}): UseVoiceInput
             const parsed = await parseWithLLM(
               transcriptionResult.text,
               inventoryRef.current,
+              patternsRef.current,
               recentItems
             );
 

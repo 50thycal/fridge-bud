@@ -80,12 +80,19 @@ const INTENT_TRIGGERS: Record<VoiceIntent, string[]> = {
     'new recipe', 'new meal', 'add recipe', 'add meal',
     'create recipe', 'save recipe', 'save meal', 'create meal',
     'make a recipe', 'make a new recipe', 'new meal pattern',
+    'add a meal', 'create a meal', 'add a recipe', 'create a recipe',
+    'add the meal', 'add a new meal', 'let me add a meal',
+    'meal called', 'recipe called', 'dish called',
+    'meal with', 'recipe with', 'dish with',
+    'it needs', 'it has', 'which needs', 'which has',
   ],
 
   edit_pattern: [
     'change recipe', 'edit recipe', 'update recipe', 'modify recipe',
     'add to recipe', 'remove from recipe', 'change meal', 'edit meal',
     'update meal', 'modify meal', 'change the recipe', 'edit the recipe',
+    'update the meal', 'change the meal', 'modify the meal',
+    'add ingredients to', 'add to the meal', 'update the recipe',
   ],
 
   unknown: [],
