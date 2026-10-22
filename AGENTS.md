@@ -9,6 +9,7 @@ Calvin wants this repository to be the shared source for food conversations acro
 - Read current files instead of relying on chat memory. A previous conversation or unmerged PR is not the committed source of truth.
 - Catalog entries distinguish complete recipes, known household meals, flexible meal patterns, and food ideas. Built-in app templates are not evidence that Calvin saved, cooked, or liked them.
 - Ingredient drafts have per-item `certainty` (`confirmed` or `draft`) and `ingredientReview.status`. Calvin requested a later audit: surface the pending review and never treat draft suggestions as his approved recipe or silently use them to order groceries. Review optional ingredients, sauce bases, quantities, and ambiguous speech before approval. Use root `mealTypes` for household categories.
+- Audit meals in small chunks: Calvin prefers one or two meals per exchange. Save supplied amounts faithfully, preserve approximate wording, and leave unspecified quantities/product identities unresolved.
 - Keep unknown quantities, instructions, sources, ratings, and preferences unknown. Do not turn an idea into a tested recipe by inference.
 
 ## Requested food updates

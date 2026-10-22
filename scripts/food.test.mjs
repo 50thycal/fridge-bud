@@ -147,7 +147,7 @@ test('household ingredients retain explicit greens, breakfast variants, and pend
   assert.equal(item('egg-taquitos','Bacon').optional,true);
   assert.equal(item('egg-taquitos','Bacon').certainty,'confirmed');
   assert.equal(item('salmon-broccoli-creamy-dill','Greek yogurt').certainty,'draft');
-  assert(meals.every(meal => meal.ingredients.some(ingredient => ingredient.certainty === 'draft')));
+  assert(meals.filter(meal => meal.ingredients.some(ingredient => ingredient.certainty === 'draft')).every(meal => meal.ingredientReview.status === 'needs-audit'));
   for (const mutate of [
     c => c.entries.find(e => e.id === 'overnight-oats').mealTypes = ['brunch'],
     c => c.entries.find(e => e.id === 'overnight-oats').ingredients[0].certainty = 'probably',

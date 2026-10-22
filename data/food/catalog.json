@@ -2192,7 +2192,7 @@
       "kind": "meal",
       "status": "cooked",
       "title": "Overnight Oats",
-      "description": "Overnight oats Calvin prepares for himself; flavor style and exact recipe still need review.",
+      "description": "Calvin's rolled overnight oats with milk, flax/chia seed mix, matcha, mushroom/superfood powder, and optional honey.",
       "tags": [
         "oats",
         "breakfast"
@@ -2200,15 +2200,21 @@
       "source": {
         "type": "user-chat",
         "reference": "Calvin: breakfast and ingredient-audit discussion, 2026-10-22",
-        "notes": "Household meal and preparer reported by Calvin. Ingredient suggestions are individually marked draft until audited."
+        "notes": "Household meal and preparer reported by Calvin. Ingredient suggestions are individually marked draft until audited. Calvin subsequently supplied the oats ingredient list, approximate quantities, and combine-together preparation on 2026-10-22; exact mushroom product remains uncertain."
       },
       "notes": [
-        "Calvin prepares these for himself. Flavor style and quantities remain unconfirmed."
+        "Calvin prepares these for himself. Flavor style and quantities remain unconfirmed.",
+        "2026-10-22 breakfast audit: Calvin supplied the ingredient list and amounts above. Preparation: combine everything together. Batch yield, milk type, exact mushroom powder, and honey amount were not supplied. Previous Greek yogurt, plain chia seeds, and salt suggestions were replaced by this user-described list; they were not confirmed ingredients."
       ],
       "preparedBy": "Calvin",
       "meal": {
         "components": [
-          "Overnight oats"
+          "Rolled oats",
+          "Milk",
+          "Flax/chia seed mix",
+          "Matcha",
+          "Mushroom/superfood powder",
+          "Optional honey"
         ]
       },
       "mealTypes": [
@@ -2216,43 +2222,53 @@
       ],
       "ingredients": [
         {
-          "name": "Oats",
+          "name": "Milk",
           "certainty": "confirmed",
           "optional": false,
           "component": "Main",
-          "notes": "Confirm oat type; no quantities supplied."
+          "notes": "About 2/3 cup per described batch. Milk type not specified."
         },
         {
-          "name": "Milk",
+          "name": "Rolled oats",
+          "certainty": "confirmed",
+          "optional": false,
+          "component": "Main",
+          "notes": "1/2 cup per described batch."
+        },
+        {
+          "name": "Flax/chia seed mix",
+          "certainty": "confirmed",
+          "optional": false,
+          "component": "Main",
+          "notes": "1 tablespoon of the combined mix per described batch, not one tablespoon of each seed."
+        },
+        {
+          "name": "Matcha",
+          "certainty": "confirmed",
+          "optional": false,
+          "component": "Main",
+          "notes": "Approximately 1 teaspoon per described batch."
+        },
+        {
+          "name": "Mushroom/superfood powder (possibly Om)",
           "certainty": "draft",
           "optional": false,
           "component": "Main",
-          "notes": "Liquid and milk type need review."
+          "notes": "1 tablespoon per described batch. Calvin recalled the name as \"Ohm\" or similar; exact brand and product/formula remain unverified."
         },
         {
-          "name": "Greek yogurt",
-          "certainty": "draft",
+          "name": "Honey",
+          "certainty": "confirmed",
           "optional": true,
-          "component": "Main"
-        },
-        {
-          "name": "Chia seeds",
-          "certainty": "draft",
-          "optional": true,
-          "component": "Main"
-        },
-        {
-          "name": "Salt",
-          "certainty": "draft",
-          "optional": true,
-          "component": "Main"
+          "component": "Main",
+          "notes": "Optional; amount not specified."
         }
       ],
       "ingredientReview": {
         "status": "needs-audit",
         "notes": [
-          "Calvin requested a later audit. Confirm draft ingredients, quantities, servings, optional additions, and sauce/seasoning choices before treating this as a final recipe or ordering groceries.",
-          "Confirm sweet vs savory flavor style and toppings; none is assumed."
+          "Ingredient list and supplied amounts reviewed with Calvin on 2026-10-22. Confirm the exact mushroom/superfood powder (possibly Om), batch yield/servings, milk type, and optional honey amount before precise inventory deduction. No additional preparation or chilling duration was supplied.",
+          "Continue the audit in small chunks, one or two meals per exchange."
         ]
       }
     },
@@ -2261,7 +2277,7 @@
       "kind": "meal",
       "status": "cooked",
       "title": "Egg Taquitos",
-      "description": "Egg taquitos prepared by Zoe, sometimes with bacon and sometimes without.",
+      "description": "Zoe's soft-shell egg taquitos with cheese, usually two eggs per taquito, optional bacon, and salsa on top.",
       "tags": [
         "eggs",
         "breakfast"
@@ -2269,14 +2285,19 @@
       "source": {
         "type": "user-chat",
         "reference": "Calvin: breakfast and ingredient-audit discussion, 2026-10-22",
-        "notes": "Household meal and preparer reported by Calvin. Ingredient suggestions are individually marked draft until audited."
+        "notes": "Household meal and preparer reported by Calvin. Ingredient suggestions are individually marked draft until audited. Calvin confirmed the tortilla, cheese, eggs, optional bacon, salsa topping, and usual 2 eggs per taquito on 2026-10-22."
       },
-      "notes": [],
+      "notes": [
+        "2026-10-22 breakfast audit: Calvin described a soft-shell tortilla wrapped around eggs and cheese, sometimes bacon, with salsa on top. Usually 2 eggs per taquito. Prior butter, salt, and pepper suggestions are not part of the confirmed list; cooking fat/seasonings and cooking method were not supplied."
+      ],
       "preparedBy": "Zoe",
       "meal": {
         "components": [
-          "Egg taquitos",
-          "Optional bacon"
+          "Soft-shell tortilla",
+          "Eggs",
+          "Cheese",
+          "Optional bacon",
+          "Salsa topping"
         ]
       },
       "mealTypes": [
@@ -2284,55 +2305,46 @@
       ],
       "ingredients": [
         {
+          "name": "Soft-shell tortilla",
+          "certainty": "confirmed",
+          "optional": false,
+          "component": "Main",
+          "notes": "One wrapper per described taquito. Tortilla size and corn vs flour were not specified."
+        },
+        {
           "name": "Eggs",
           "certainty": "confirmed",
           "optional": false,
-          "component": "Main"
+          "component": "Main",
+          "notes": "Usually 2 eggs per taquito."
         },
         {
-          "name": "Tortillas",
-          "certainty": "draft",
+          "name": "Cheese",
+          "certainty": "confirmed",
           "optional": false,
           "component": "Main",
-          "notes": "Taquito wrapper type and size have not been supplied."
+          "notes": "Included in the filling; cheese type and amount were not specified."
         },
         {
           "name": "Bacon",
           "certainty": "confirmed",
           "optional": true,
           "component": "Main",
-          "notes": "Calvin explicitly said Zoe makes these with or without bacon."
+          "notes": "Optional: Zoe makes these with or without bacon. Amount not specified."
         },
         {
-          "name": "Shredded cheese",
-          "certainty": "draft",
-          "optional": true,
-          "component": "Main"
-        },
-        {
-          "name": "Butter",
-          "certainty": "draft",
-          "optional": true,
-          "component": "Cooking fat",
-          "notes": "Confirm the fat used to cook the eggs, if any."
-        },
-        {
-          "name": "Salt",
-          "certainty": "draft",
+          "name": "Salsa",
+          "certainty": "confirmed",
           "optional": false,
-          "component": "Seasoning"
-        },
-        {
-          "name": "Black pepper",
-          "certainty": "draft",
-          "optional": false,
-          "component": "Seasoning"
+          "component": "Topping",
+          "notes": "Added on top; type and amount not specified."
         }
       ],
       "ingredientReview": {
         "status": "needs-audit",
         "notes": [
-          "Calvin requested a later audit. Confirm draft ingredients, quantities, servings, optional additions, and sauce/seasoning choices before treating this as a final recipe or ordering groceries."
+          "Ingredient identities reviewed with Calvin on 2026-10-22. Usually 2 eggs per taquito; confirm batch/taquito count, tortilla size/type, cheese type/amount, optional bacon amount, and salsa amount before precise inventory deduction. Cooking method/fat/seasoning remain unspecified.",
+          "Continue the audit in small chunks, one or two meals per exchange."
         ]
       }
     },
