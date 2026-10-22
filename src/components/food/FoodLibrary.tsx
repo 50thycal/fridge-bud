@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import type { FoodEntry } from '@/lib/food-catalog';
+import type { FoodCatalog } from '@/lib/food-catalog';
 import type { IngredientSlot } from '@/lib/types';
 import { exportMealPatterns } from '@/lib/storage';
 
@@ -12,13 +12,17 @@ function SlotGroup({ title, slots }: { title: string; slots: IngredientSlot[] })
   return <div><h3 className="font-semibold">{title}</h3><p className="text-zinc-300">{slots.map(slot => `${slot.role}: ${(slot.specificItems ?? slot.acceptedCategories ?? []).join(' / ')}`).join('; ') || 'None recorded'}</p></div>;
 }
 
-export function FoodLibrary({ entries }: { entries: FoodEntry[] }) {
+export function FoodLibrary({ catalog }: { catalog: FoodCatalog }) {
+  const { entries } = catalog;
+  const [collectionId, setCollectionId] = useState(catalog.activeCollectionId ?? 'all');
+  const collection = catalog.collections?.find(item => item.id === collectionId);
+  const listEntries = collection ? collection.entryIds.flatMap(id => entries.find(entry => entry.id === id) ?? []) : entries;
   const [query, setQuery] = useState('');
   const [kind, setKind] = useState('all');
   const [message, setMessage] = useState('');
-  const visible = entries.filter(entry =>
+  const visible = listEntries.filter(entry =>
     (kind === 'all' || entry.kind === kind) &&
-    JSON.stringify([entry.title, entry.description, entry.tags, entry.notes, entry.recipe, entry.pattern]).toLowerCase().includes(query.toLowerCase())
+    JSON.stringify([entry.title, entry.description, entry.tags, entry.notes, entry.preparedBy, entry.meal, entry.recipe, entry.pattern]).toLowerCase().includes(query.toLowerCase())
   );
 
   function exportLocalMeals() {
@@ -42,7 +46,7 @@ export function FoodLibrary({ entries }: { entries: FoodEntry[] }) {
       <Link href="/meals" className="inline-flex min-h-11 items-center text-green-400">← Back to meals</Link>
       <header>
         <p className="text-green-400 text-sm">FridgeBud</p>
-        <h1 className="text-3xl font-bold">Our food catalog</h1>
+        <h1 className="text-3xl font-bold">{collection?.title ?? 'Our food catalog'}</h1>
         <p className="mt-2 text-zinc-400">Recipes, meal patterns, and ideas we can build on together.</p>
         <a href={catalogUrl} className="inline-flex min-h-11 items-center text-green-400 underline">View the shared source on GitHub</a>
       </header>
@@ -56,16 +60,24 @@ export function FoodLibrary({ entries }: { entries: FoodEntry[] }) {
       </section>
 
       <div className="space-y-3">
+        {catalog.collections && <>
+          <label htmlFor="meal-list" className="block font-medium">Meal list</label>
+          <select id="meal-list" value={collectionId} onChange={event => setCollectionId(event.target.value)} className="min-h-11 w-full rounded-xl bg-zinc-900 border border-zinc-700 px-4 py-3">
+            {catalog.collections.map(list => <option key={list.id} value={list.id}>{list.title}</option>)}
+            <option value="all">All saved food</option>
+          </select>
+        </>}
         <label htmlFor="food-search" className="block font-medium">Find food</label>
         <input id="food-search" value={query} onChange={event => setQuery(event.target.value)} placeholder="Search names, ingredients, or tags" className="min-h-11 w-full rounded-xl bg-zinc-900 border border-zinc-700 px-4 py-3" />
         <label htmlFor="food-kind" className="block font-medium">Show</label>
         <select id="food-kind" value={kind} onChange={event => setKind(event.target.value)} className="min-h-11 w-full rounded-xl bg-zinc-900 border border-zinc-700 px-4 py-3">
           <option value="all">Everything</option>
+          <option value="meal">Household meals</option>
           <option value="recipe">Recipes</option>
           <option value="idea">Ideas</option>
           <option value="pattern">Meal patterns</option>
         </select>
-        <p role="status" className="text-zinc-400">{visible.length} of {entries.length} entries</p>
+        <p role="status" className="text-zinc-400">{visible.length} of {listEntries.length} entries</p>
       </div>
 
       {visible.length === 0 && <p className="rounded-xl bg-zinc-900 p-4">No entries yet for this selection. Tell me what you want to add in chat.</p>}
@@ -73,7 +85,9 @@ export function FoodLibrary({ entries }: { entries: FoodEntry[] }) {
         <article key={entry.id} id={entry.id} className="rounded-2xl bg-zinc-900 border border-zinc-800 p-5 space-y-3">
           <p className="text-sm capitalize text-green-400">{entry.kind} · {entry.status}</p>
           <h2 className="text-2xl font-semibold">{entry.title}</h2>
+          {entry.preparedBy && <p className="text-green-300">Prepared by {entry.preparedBy}</p>}
           <p className="text-zinc-300">{entry.description}</p>
+          {entry.meal && <p className="text-sm text-zinc-400">Known household meal. Full recipe details have not yet been recorded.</p>}
           <p className="text-sm text-zinc-400">{entry.tags.join(' · ')}</p>
           {entry.recipe && <>
             {entry.recipe.servings && <p>Servings: {entry.recipe.servings}</p>}

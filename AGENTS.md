@@ -5,8 +5,9 @@ Calvin wants this repository to be the shared source for food conversations acro
 ## Read before discussing saved food
 
 - Fetch the latest default branch of `50thycal/fridge-bud`, then read `data/food/catalog.json` and `data/food/README.md`. Cite the catalog link when useful.
+- **Meals V2 is the active household list.** Resolve `activeCollectionId` and that collection's `entryIds` in the catalog when Calvin asks about "my meals", "our meals", or to edit a meal. Do not include the original defaults unless he asks for them. Preserve other collections as reference. Record the named preparer; do not assume both people cook every meal.
 - Read current files instead of relying on chat memory. A previous conversation or unmerged PR is not the committed source of truth.
-- Catalog entries distinguish complete recipes, flexible meal patterns, and food ideas. Built-in app templates are not evidence that Calvin saved, cooked, or liked them.
+- Catalog entries distinguish complete recipes, known household meals, flexible meal patterns, and food ideas. Built-in app templates are not evidence that Calvin saved, cooked, or liked them.
 - Keep unknown quantities, instructions, sources, ratings, and preferences unknown. Do not turn an idea into a tested recipe by inference.
 
 ## Requested food updates
