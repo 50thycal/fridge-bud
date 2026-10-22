@@ -1176,7 +1176,9 @@
         "reference": "src/data/meal-patterns.ts@bb0fbdaa27dd4bf647f7c4401869b3a3688ba58d",
         "notes": "Built-in app template recovered from the repository; not proof of a personally saved or cooked recipe."
       },
-      "notes": [],
+      "notes": [
+        "The repository records ingredient alternatives for the salad, Lemon-Dijon Dressing, and Herb Marinade. Quantities and cooking instructions still need to be supplied before this becomes a complete recipe."
+      ],
       "pattern": {
         "id": "mediterranean-chicken-salad",
         "name": "Mediterranean Chicken Salad",
