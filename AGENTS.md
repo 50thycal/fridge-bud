@@ -20,6 +20,11 @@ Calvin wants this repository to be the shared source for food conversations acro
 - App code, workflows, credentials, repository settings, and infrastructure are outside food-content auto-merge. Follow the explicit request for those changes.
 - This repository is public. Save food content only; keep household access codes, credentials, raw household backups, inventory, and unrelated personal details out of commits.
 
+## Approved household workflow direction
+
+- Read `docs/household-food-workflow.md` for Calvin's approved direction: shared private inventory, separate authenticated access for Calvin and Zoe, photo-assisted observations, and automatic deductions when audited meals are logged as cooked.
+- These are requirements, not implemented features. Do not claim either ChatGPT account is connected or inventory was updated without a successful backend write. Ingredient review remains the current prerequisite.
+
 ## App and recovery
 
 - `/food` renders the committed catalog; app deployments update after merges. Chat should always read main directly, because a deployed app may lag.
