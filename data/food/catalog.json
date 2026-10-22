@@ -1162,7 +1162,7 @@
     {
       "id": "mediterranean-chicken-salad",
       "kind": "pattern",
-      "status": "saved",
+      "status": "cooked",
       "title": "Mediterranean Chicken Salad",
       "description": "Fresh, hearty salad with lemon-herb chicken and homemade dressing",
       "tags": [
@@ -1177,7 +1177,8 @@
         "notes": "Built-in app template recovered from the repository; not proof of a personally saved or cooked recipe."
       },
       "notes": [
-        "The repository records ingredient alternatives for the salad, Lemon-Dijon Dressing, and Herb Marinade. Quantities and cooking instructions still need to be supplied before this becomes a complete recipe."
+        "The repository records ingredient alternatives for the salad, Lemon-Dijon Dressing, and Herb Marinade. Quantities and cooking instructions still need to be supplied before this becomes a complete recipe.",
+        "2026-10-22: Calvin confirmed Mediterranean Chicken Salad as a meal he prepares and the only original entry to include in Meals V2. Existing ingredient alternatives remain reference details; exact quantities and method have not yet been supplied."
       ],
       "pattern": {
         "id": "mediterranean-chicken-salad",
@@ -1339,7 +1340,221 @@
           "mediterranean",
           "salad"
         ]
+      },
+      "preparedBy": "Calvin"
+    },
+    {
+      "id": "mediterranean-chicken-entree",
+      "kind": "meal",
+      "status": "cooked",
+      "title": "Mediterranean Chicken with Tzatziki & Roasted Vegetables",
+      "description": "Mediterranean-style chicken served as an entree, with tzatziki sauce and roasted vegetables such as zucchini.",
+      "tags": [
+        "chicken",
+        "mediterranean"
+      ],
+      "source": {
+        "type": "user-chat",
+        "reference": "Calvin: Meals V2 discussion, 2026-10-22",
+        "notes": "User-reported household meal and preparer. No quantities, timings, or full recipe were supplied."
+      },
+      "notes": [],
+      "preparedBy": "Calvin",
+      "meal": {
+        "components": [
+          "Mediterranean-style chicken",
+          "Tzatziki sauce",
+          "Roasted vegetables, such as zucchini"
+        ]
       }
+    },
+    {
+      "id": "salmon-broccoli-creamy-dill",
+      "kind": "meal",
+      "status": "cooked",
+      "title": "Salmon & Broccoli with Creamy Dill Sauce",
+      "description": "Salmon with broccoli cooked in the oven and a creamy dill sauce.",
+      "tags": [
+        "salmon",
+        "broccoli",
+        "dill"
+      ],
+      "source": {
+        "type": "user-chat",
+        "reference": "Calvin: Meals V2 discussion, 2026-10-22",
+        "notes": "User-reported household meal and preparer. No quantities, timings, or full recipe were supplied."
+      },
+      "notes": [],
+      "preparedBy": "Calvin",
+      "meal": {
+        "components": [
+          "Salmon",
+          "Broccoli cooked in the oven",
+          "Creamy dill sauce"
+        ]
+      }
+    },
+    {
+      "id": "chicken-caprese-salad",
+      "kind": "meal",
+      "status": "cooked",
+      "title": "Chicken Caprese Salad",
+      "description": "Chicken Caprese salad prepared by Calvin. Exact ingredients and method have not yet been recorded.",
+      "tags": [
+        "chicken",
+        "salad",
+        "caprese"
+      ],
+      "source": {
+        "type": "user-chat",
+        "reference": "Calvin: Meals V2 discussion, 2026-10-22",
+        "notes": "User-reported household meal and preparer. No quantities, timings, or full recipe were supplied."
+      },
+      "notes": [],
+      "preparedBy": "Calvin",
+      "meal": {
+        "components": [
+          "Chicken Caprese salad"
+        ]
+      }
+    },
+    {
+      "id": "beef-stroganoff",
+      "kind": "meal",
+      "status": "cooked",
+      "title": "Beef Stroganoff",
+      "description": "Beef stroganoff prepared by Zoe. Calvin describes hers as good; recipe details have not yet been recorded.",
+      "tags": [
+        "beef"
+      ],
+      "source": {
+        "type": "user-chat",
+        "reference": "Calvin: Meals V2 discussion, 2026-10-22",
+        "notes": "User-reported household meal and preparer. No quantities, timings, or full recipe were supplied."
+      },
+      "notes": [],
+      "preparedBy": "Zoe",
+      "meal": {
+        "components": [
+          "Beef stroganoff"
+        ]
+      }
+    },
+    {
+      "id": "white-mom-tacos",
+      "kind": "meal",
+      "status": "cooked",
+      "title": "White Mom Tacos",
+      "description": "Ground beef tacos with peppers and onions fried on the stovetop, served in soft-shell tortillas.",
+      "tags": [
+        "beef",
+        "tacos"
+      ],
+      "source": {
+        "type": "user-chat",
+        "reference": "Calvin: Meals V2 discussion, 2026-10-22",
+        "notes": "User-reported household meal and preparer. No quantities, timings, or full recipe were supplied."
+      },
+      "notes": [],
+      "preparedBy": "Zoe",
+      "meal": {
+        "components": [
+          "Ground beef",
+          "Stovetop-fried peppers and onions",
+          "Soft-shell tortillas"
+        ]
+      }
+    },
+    {
+      "id": "chicken-fajitas",
+      "kind": "meal",
+      "status": "cooked",
+      "title": "Chicken Fajitas",
+      "description": "The same peppers-and-onions stovetop preparation and soft-shell tortillas as White Mom Tacos, using chicken instead of ground beef.",
+      "tags": [
+        "chicken",
+        "fajitas"
+      ],
+      "source": {
+        "type": "user-chat",
+        "reference": "Calvin: Meals V2 discussion, 2026-10-22",
+        "notes": "User-reported household meal and preparer. No quantities, timings, or full recipe were supplied."
+      },
+      "notes": [],
+      "preparedBy": "Zoe",
+      "meal": {
+        "components": [
+          "Chicken",
+          "Stovetop-fried peppers and onions",
+          "Soft-shell tortillas"
+        ]
+      }
+    },
+    {
+      "id": "chicken-pesto-pasta",
+      "kind": "meal",
+      "status": "cooked",
+      "title": "Chicken Pesto Pasta",
+      "description": "Chicken pesto pasta prepared by Zoe. Calvin describes hers as really good; exact recipe details have not yet been recorded.",
+      "tags": [
+        "chicken",
+        "pesto",
+        "pasta"
+      ],
+      "source": {
+        "type": "user-chat",
+        "reference": "Calvin: Meals V2 discussion, 2026-10-22",
+        "notes": "User-reported household meal and preparer. No quantities, timings, or full recipe were supplied."
+      },
+      "notes": [],
+      "preparedBy": "Zoe",
+      "meal": {
+        "components": [
+          "Chicken",
+          "Pesto",
+          "Pasta"
+        ]
+      }
+    }
+  ],
+  "activeCollectionId": "meals-v2",
+  "collections": [
+    {
+      "id": "original-meals",
+      "title": "Original Meals (reference)",
+      "entryIds": [
+        "eggs-toast",
+        "stir-fry",
+        "grain-bowl",
+        "pasta-dish",
+        "sheet-pan-dinner",
+        "tacos",
+        "salad-protein",
+        "salmon-veg",
+        "omelette",
+        "sandwich",
+        "yogurt-bowl",
+        "quesadilla",
+        "fried-rice",
+        "smoothie",
+        "avocado-toast",
+        "burrito-bowl",
+        "mediterranean-chicken-salad"
+      ]
+    },
+    {
+      "id": "meals-v2",
+      "title": "Meals V2",
+      "entryIds": [
+        "mediterranean-chicken-salad",
+        "mediterranean-chicken-entree",
+        "salmon-broccoli-creamy-dill",
+        "chicken-caprese-salad",
+        "beef-stroganoff",
+        "white-mom-tacos",
+        "chicken-fajitas",
+        "chicken-pesto-pasta"
+      ]
     }
   ]
 }

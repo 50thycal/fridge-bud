@@ -9,11 +9,12 @@ import { runFoodPr } from './food-pr.mjs';
 const catalog = JSON.parse(fs.readFileSync('data/food/catalog.json', 'utf8'));
 const clone = value => structuredClone(value);
 
-test('catalog validates recipes, ideas, and pattern components without claiming cooking history', () => {
+test('catalog preserves import provenance and records explicitly confirmed cooking history', () => {
   validateCatalog(catalog);
   const entry = catalog.entries.find(entry => entry.id === 'mediterranean-chicken-salad');
   assert.equal(entry.source.type, 'app-default');
-  assert.equal(entry.status, 'saved');
+  assert.equal(entry.status, 'cooked');
+  assert.equal(entry.preparedBy, 'Calvin');
   assert.deepEqual(entry.pattern.components.map(component => component.name), ['Lemon-Dijon Dressing', 'Herb Marinade']);
   validateCatalog({schemaVersion:1,entries:[
     {id:'test-idea',kind:'idea',status:'idea',title:'Food idea',description:'Discuss later',tags:[],notes:[],source:{type:'user-chat',reference:'Test conversation',notes:''}},
@@ -105,4 +106,27 @@ test('auto-merge refuses other authors, forks, drafts, code changes, deletion, c
   const api=async (path,options) => path === '/pulls/99' ? {...event.pull_request,head:{sha:'moved-head'}} : mocked.api(path,options);
   await assert.rejects(runFoodPr({event,repo,api,previous:catalog}),/changed during validation/);
   assert(!mocked.calls.some(call=>call.path.endsWith('/merge')));
+});
+
+
+test('Meals V2 is the active eight-meal household list and preserves the original reference collection', () => {
+  assert.equal(catalog.activeCollectionId, 'meals-v2');
+  const active = catalog.collections.find(list => list.id === catalog.activeCollectionId);
+  assert.equal(active.title, 'Meals V2');
+  assert.equal(active.entryIds.length, 8);
+  const meals = active.entryIds.map(id => catalog.entries.find(entry => entry.id === id));
+  assert.deepEqual(meals.map(meal => meal.preparedBy), ['Calvin','Calvin','Calvin','Calvin','Zoe','Zoe','Zoe','Zoe']);
+  const original = catalog.collections.find(list => list.id === 'original-meals');
+  assert.equal(original.entryIds.length, 17);
+  assert.deepEqual(active.entryIds.filter(id => original.entryIds.includes(id)), ['mediterranean-chicken-salad']);
+  for (const mutate of [
+    c => c.collections[1].entryIds.push('missing-meal'),
+    c => c.collections[1].entryIds.push(c.collections[1].entryIds[0]),
+    c => c.activeCollectionId = 'missing-list',
+    c => c.entries.at(-1).preparedBy = 'unknown',
+    c => c.entries.at(-1).meal.components = [],
+  ]) {
+    const invalid = clone(catalog); mutate(invalid);
+    assert.throws(() => validateCatalog(invalid));
+  }
 });

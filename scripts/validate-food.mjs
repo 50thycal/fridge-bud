@@ -40,16 +40,18 @@ export function validatePattern(pattern) {
 
 export function validateCatalog(catalog) {
   assert(object(catalog), 'Catalog must be an object');
-  keys(catalog, ['schemaVersion','entries']);
+  keys(catalog, ['schemaVersion','entries','activeCollectionId','collections']);
   assert(catalog.schemaVersion === 1 && Array.isArray(catalog.entries), 'Unsupported catalog version');
   const ids = new Set();
   for (const entry of catalog.entries) {
     assert(object(entry), 'Invalid entry');
-    keys(entry, ['id','kind','status','title','description','tags','source','notes','recipe','pattern']);
+    keys(entry, ['id','kind','status','title','description','tags','source','notes','recipe','pattern','preparedBy','meal']);
     assert(text(entry.id) && /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(entry.id), 'Use a stable kebab-case ID');
     assert(!ids.has(entry.id), `Duplicate ID: ${entry.id}`); ids.add(entry.id);
     assert(text(entry.title) && typeof entry.description === 'string', 'Missing title/description');
-    assert(oneOf(entry.kind, ['pattern','recipe','idea']), 'Invalid entry kind');
+    assert(oneOf(entry.kind, ['pattern','recipe','idea','meal']), 'Invalid entry kind');
+    assert(entry.preparedBy === undefined || oneOf(entry.preparedBy, ['Calvin','Zoe']), 'Invalid meal preparer');
+    assert(entry.kind === 'meal' || entry.meal === undefined, 'Meal components belong to meal entries');
     assert(oneOf(entry.status, ['saved','idea','cooked','favorite','archived']), 'Invalid status');
     assert(strings(entry.tags) && strings(entry.notes), 'Tags and notes must be string arrays');
     assert(object(entry.source), 'Missing source');
@@ -66,9 +68,27 @@ export function validateCatalog(catalog) {
       assert(entry.recipe.servings === undefined || text(entry.recipe.servings), 'Invalid servings');
       assert(strings(entry.recipe.ingredients) && entry.recipe.ingredients.length > 0, 'Recipe needs ingredients');
       assert(strings(entry.recipe.steps) && entry.recipe.steps.length > 0, 'Recipe needs instructions; otherwise save it as an idea');
+    } else if (entry.kind === 'meal') {
+      assert(entry.pattern === undefined && entry.recipe === undefined && object(entry.meal), 'Household meals contain meal data only');
+      keys(entry.meal, ['components']);
+      assert(text(entry.preparedBy) && strings(entry.meal.components) && entry.meal.components.length > 0, 'Household meal needs a preparer and known components');
     } else {
       assert(entry.pattern === undefined && entry.recipe === undefined, 'Ideas use description/notes until a recipe is known');
     }
+  }
+  if (catalog.collections !== undefined || catalog.activeCollectionId !== undefined) {
+    assert(Array.isArray(catalog.collections) && text(catalog.activeCollectionId), 'Collections need an active collection');
+    const collectionIds = new Set();
+    for (const collection of catalog.collections) {
+      assert(object(collection), 'Invalid collection');
+      keys(collection, ['id','title','entryIds']);
+      assert(text(collection.id) && text(collection.title) && strings(collection.entryIds), 'Invalid collection fields');
+      assert(!collectionIds.has(collection.id), 'Duplicate collection ID');
+      collectionIds.add(collection.id);
+      assert(new Set(collection.entryIds).size === collection.entryIds.length, 'Duplicate meal in collection');
+      assert(collection.entryIds.every(id => ids.has(id)), 'Collection references a missing meal');
+    }
+    assert(collectionIds.has(catalog.activeCollectionId), 'Active collection does not exist');
   }
   return catalog;
 }

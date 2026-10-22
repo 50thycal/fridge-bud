@@ -3,7 +3,7 @@ import type { MealPattern } from './types';
 
 export interface FoodEntry {
   id: string;
-  kind: 'pattern' | 'recipe' | 'idea';
+  kind: 'pattern' | 'recipe' | 'idea' | 'meal';
   status: 'saved' | 'idea' | 'cooked' | 'favorite' | 'archived';
   title: string;
   description: string;
@@ -14,6 +14,8 @@ export interface FoodEntry {
     notes: string;
   };
   notes: string[];
+  preparedBy?: 'Calvin' | 'Zoe';
+  meal?: { components: string[] };
   recipe?: {
     servings?: string;
     ingredients: string[];
@@ -25,6 +27,8 @@ export interface FoodEntry {
 export interface FoodCatalog {
   schemaVersion: 1;
   entries: FoodEntry[];
+  activeCollectionId?: string;
+  collections?: { id: string; title: string; entryIds: string[] }[];
 }
 
 // scripts/validate-food.mjs validates this data before build and merge.
