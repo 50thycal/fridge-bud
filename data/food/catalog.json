@@ -1178,7 +1178,8 @@
       },
       "notes": [
         "The repository records ingredient alternatives for the salad, Lemon-Dijon Dressing, and Herb Marinade. Quantities and cooking instructions still need to be supplied before this becomes a complete recipe.",
-        "2026-10-22: Calvin confirmed Mediterranean Chicken Salad as a meal he prepares and the only original entry to include in Meals V2. Existing ingredient alternatives remain reference details; exact quantities and method have not yet been supplied."
+        "2026-10-22: Calvin confirmed Mediterranean Chicken Salad as a meal he prepares and the only original entry to include in Meals V2. Existing ingredient alternatives remain reference details; exact quantities and method have not yet been supplied.",
+        "2026-10-22: Calvin specified kale as the greens. Spinach and mixed greens were original template alternatives, not his confirmed recipe. Ingredient drafts are separately flagged for his audit."
       ],
       "pattern": {
         "id": "mediterranean-chicken-salad",
@@ -1197,9 +1198,7 @@
           {
             "role": "greens",
             "specificItems": [
-              "Kale",
-              "Spinach",
-              "Mixed greens"
+              "Kale"
             ],
             "optional": false
           }
@@ -1331,7 +1330,6 @@
         ],
         "effort": "moderate",
         "mealTypes": [
-          "lunch",
           "dinner"
         ],
         "tags": [
@@ -1341,7 +1339,137 @@
           "salad"
         ]
       },
-      "preparedBy": "Calvin"
+      "preparedBy": "Calvin",
+      "mealTypes": [
+        "dinner"
+      ],
+      "ingredients": [
+        {
+          "name": "Chicken",
+          "certainty": "confirmed",
+          "optional": false,
+          "component": "Main"
+        },
+        {
+          "name": "Kale",
+          "certainty": "confirmed",
+          "optional": false,
+          "component": "Main",
+          "notes": "Calvin explicitly confirmed kale as the greens for this meal."
+        },
+        {
+          "name": "Cucumber",
+          "certainty": "draft",
+          "optional": false,
+          "component": "Main"
+        },
+        {
+          "name": "Tomatoes",
+          "certainty": "draft",
+          "optional": false,
+          "component": "Main",
+          "notes": "Confirm cherry vs other tomatoes."
+        },
+        {
+          "name": "Red onion",
+          "certainty": "draft",
+          "optional": false,
+          "component": "Main"
+        },
+        {
+          "name": "Feta cheese",
+          "certainty": "draft",
+          "optional": true,
+          "component": "Main",
+          "notes": "Original template also allowed goat cheese; confirm preference."
+        },
+        {
+          "name": "Olives",
+          "certainty": "draft",
+          "optional": true,
+          "component": "Main"
+        },
+        {
+          "name": "Nuts",
+          "certainty": "draft",
+          "optional": true,
+          "component": "Main",
+          "notes": "Original template allowed pine nuts, almonds, or walnuts; confirm whether used."
+        },
+        {
+          "name": "Lemon juice",
+          "certainty": "draft",
+          "optional": false,
+          "component": "Lemon-Dijon dressing"
+        },
+        {
+          "name": "Dijon mustard",
+          "certainty": "draft",
+          "optional": false,
+          "component": "Lemon-Dijon dressing"
+        },
+        {
+          "name": "Garlic",
+          "certainty": "draft",
+          "optional": false,
+          "component": "Lemon-Dijon dressing"
+        },
+        {
+          "name": "Olive oil",
+          "certainty": "draft",
+          "optional": false,
+          "component": "Lemon-Dijon dressing"
+        },
+        {
+          "name": "Honey",
+          "certainty": "draft",
+          "optional": true,
+          "component": "Lemon-Dijon dressing"
+        },
+        {
+          "name": "Lemon juice",
+          "certainty": "draft",
+          "optional": false,
+          "component": "Chicken marinade"
+        },
+        {
+          "name": "Garlic",
+          "certainty": "draft",
+          "optional": false,
+          "component": "Chicken marinade"
+        },
+        {
+          "name": "Olive oil",
+          "certainty": "draft",
+          "optional": false,
+          "component": "Chicken marinade"
+        },
+        {
+          "name": "Oregano",
+          "certainty": "draft",
+          "optional": false,
+          "component": "Chicken marinade",
+          "notes": "Suggested herb; confirm which herbs Calvin actually uses."
+        },
+        {
+          "name": "Salt",
+          "certainty": "draft",
+          "optional": false,
+          "component": "Seasoning"
+        },
+        {
+          "name": "Black pepper",
+          "certainty": "draft",
+          "optional": false,
+          "component": "Seasoning"
+        }
+      ],
+      "ingredientReview": {
+        "status": "needs-audit",
+        "notes": [
+          "Calvin requested a later audit. Confirm draft ingredients, quantities, servings, optional additions, and sauce/seasoning choices before treating this as a final recipe or ordering groceries."
+        ]
+      }
     },
     {
       "id": "mediterranean-chicken-entree",
@@ -1365,6 +1493,73 @@
           "Mediterranean-style chicken",
           "Tzatziki sauce",
           "Roasted vegetables, such as zucchini"
+        ]
+      },
+      "mealTypes": [
+        "dinner"
+      ],
+      "ingredients": [
+        {
+          "name": "Chicken",
+          "certainty": "confirmed",
+          "optional": false,
+          "component": "Main"
+        },
+        {
+          "name": "Tzatziki sauce",
+          "certainty": "confirmed",
+          "optional": false,
+          "component": "Main",
+          "notes": "Confirm purchased vs homemade before breaking this into sauce ingredients."
+        },
+        {
+          "name": "Zucchini",
+          "certainty": "confirmed",
+          "optional": false,
+          "component": "Main",
+          "notes": "Calvin gave zucchini as an example of roasted vegetables; other vegetables can vary."
+        },
+        {
+          "name": "Olive oil",
+          "certainty": "draft",
+          "optional": false,
+          "component": "Main"
+        },
+        {
+          "name": "Lemon juice",
+          "certainty": "draft",
+          "optional": false,
+          "component": "Chicken seasoning"
+        },
+        {
+          "name": "Garlic",
+          "certainty": "draft",
+          "optional": false,
+          "component": "Chicken seasoning"
+        },
+        {
+          "name": "Oregano",
+          "certainty": "draft",
+          "optional": false,
+          "component": "Chicken seasoning"
+        },
+        {
+          "name": "Salt",
+          "certainty": "draft",
+          "optional": false,
+          "component": "Seasoning"
+        },
+        {
+          "name": "Black pepper",
+          "certainty": "draft",
+          "optional": false,
+          "component": "Seasoning"
+        }
+      ],
+      "ingredientReview": {
+        "status": "needs-audit",
+        "notes": [
+          "Calvin requested a later audit. Confirm draft ingredients, quantities, servings, optional additions, and sauce/seasoning choices before treating this as a final recipe or ordering groceries."
         ]
       }
     },
@@ -1392,6 +1587,73 @@
           "Broccoli cooked in the oven",
           "Creamy dill sauce"
         ]
+      },
+      "mealTypes": [
+        "dinner"
+      ],
+      "ingredients": [
+        {
+          "name": "Salmon",
+          "certainty": "confirmed",
+          "optional": false,
+          "component": "Main"
+        },
+        {
+          "name": "Broccoli",
+          "certainty": "confirmed",
+          "optional": false,
+          "component": "Main"
+        },
+        {
+          "name": "Dill",
+          "certainty": "confirmed",
+          "optional": false,
+          "component": "Creamy dill sauce",
+          "notes": "Dill is confirmed by the sauce description; fresh vs dried is not specified."
+        },
+        {
+          "name": "Greek yogurt",
+          "certainty": "draft",
+          "optional": false,
+          "component": "Creamy dill sauce",
+          "notes": "Draft creamy base; could instead be sour cream or another base. Calvin must confirm."
+        },
+        {
+          "name": "Lemon juice",
+          "certainty": "draft",
+          "optional": false,
+          "component": "Creamy dill sauce"
+        },
+        {
+          "name": "Garlic",
+          "certainty": "draft",
+          "optional": false,
+          "component": "Creamy dill sauce"
+        },
+        {
+          "name": "Olive oil",
+          "certainty": "draft",
+          "optional": false,
+          "component": "Roasting"
+        },
+        {
+          "name": "Salt",
+          "certainty": "draft",
+          "optional": false,
+          "component": "Seasoning"
+        },
+        {
+          "name": "Black pepper",
+          "certainty": "draft",
+          "optional": false,
+          "component": "Seasoning"
+        }
+      ],
+      "ingredientReview": {
+        "status": "needs-audit",
+        "notes": [
+          "Calvin requested a later audit. Confirm draft ingredients, quantities, servings, optional additions, and sauce/seasoning choices before treating this as a final recipe or ordering groceries."
+        ]
       }
     },
     {
@@ -1416,6 +1678,73 @@
         "components": [
           "Chicken Caprese salad"
         ]
+      },
+      "mealTypes": [
+        "dinner"
+      ],
+      "ingredients": [
+        {
+          "name": "Chicken",
+          "certainty": "confirmed",
+          "optional": false,
+          "component": "Main"
+        },
+        {
+          "name": "Arugula",
+          "certainty": "draft",
+          "optional": false,
+          "component": "Main",
+          "notes": "Interpreted the transcribed \"race day salad\" reference as Caprese salad. Arugula was named explicitly, but the meal association needs Calvin's audit."
+        },
+        {
+          "name": "Tomatoes",
+          "certainty": "draft",
+          "optional": false,
+          "component": "Main"
+        },
+        {
+          "name": "Fresh mozzarella",
+          "certainty": "draft",
+          "optional": false,
+          "component": "Main"
+        },
+        {
+          "name": "Basil",
+          "certainty": "draft",
+          "optional": false,
+          "component": "Main"
+        },
+        {
+          "name": "Olive oil",
+          "certainty": "draft",
+          "optional": false,
+          "component": "Dressing"
+        },
+        {
+          "name": "Balsamic glaze",
+          "certainty": "draft",
+          "optional": true,
+          "component": "Dressing"
+        },
+        {
+          "name": "Salt",
+          "certainty": "draft",
+          "optional": false,
+          "component": "Seasoning"
+        },
+        {
+          "name": "Black pepper",
+          "certainty": "draft",
+          "optional": false,
+          "component": "Seasoning"
+        }
+      ],
+      "ingredientReview": {
+        "status": "needs-audit",
+        "notes": [
+          "Calvin requested a later audit. Confirm draft ingredients, quantities, servings, optional additions, and sauce/seasoning choices before treating this as a final recipe or ordering groceries.",
+          "Verify that the arugula comment refers to this Caprese salad; the spoken meal name was unclear in transcription."
+        ]
       }
     },
     {
@@ -1437,6 +1766,96 @@
       "meal": {
         "components": [
           "Beef stroganoff"
+        ]
+      },
+      "mealTypes": [
+        "dinner"
+      ],
+      "ingredients": [
+        {
+          "name": "Beef",
+          "certainty": "confirmed",
+          "optional": false,
+          "component": "Main",
+          "notes": "Cut and whether sliced or ground are not yet specified."
+        },
+        {
+          "name": "Egg noodles",
+          "certainty": "draft",
+          "optional": false,
+          "component": "Main"
+        },
+        {
+          "name": "Mushrooms",
+          "certainty": "draft",
+          "optional": false,
+          "component": "Main"
+        },
+        {
+          "name": "Onion",
+          "certainty": "draft",
+          "optional": false,
+          "component": "Main"
+        },
+        {
+          "name": "Garlic",
+          "certainty": "draft",
+          "optional": false,
+          "component": "Main"
+        },
+        {
+          "name": "Sour cream",
+          "certainty": "draft",
+          "optional": false,
+          "component": "Sauce"
+        },
+        {
+          "name": "Beef broth",
+          "certainty": "draft",
+          "optional": false,
+          "component": "Sauce"
+        },
+        {
+          "name": "Flour",
+          "certainty": "draft",
+          "optional": false,
+          "component": "Sauce"
+        },
+        {
+          "name": "Butter",
+          "certainty": "draft",
+          "optional": false,
+          "component": "Cooking fat"
+        },
+        {
+          "name": "Dijon mustard",
+          "certainty": "draft",
+          "optional": true,
+          "component": "Sauce"
+        },
+        {
+          "name": "Worcestershire sauce",
+          "certainty": "draft",
+          "optional": true,
+          "component": "Sauce"
+        },
+        {
+          "name": "Salt",
+          "certainty": "draft",
+          "optional": false,
+          "component": "Seasoning"
+        },
+        {
+          "name": "Black pepper",
+          "certainty": "draft",
+          "optional": false,
+          "component": "Seasoning"
+        }
+      ],
+      "ingredientReview": {
+        "status": "needs-audit",
+        "notes": [
+          "Calvin requested a later audit. Confirm draft ingredients, quantities, servings, optional additions, and sauce/seasoning choices before treating this as a final recipe or ordering groceries."
         ]
       }
     },
@@ -1463,6 +1882,98 @@
           "Stovetop-fried peppers and onions",
           "Soft-shell tortillas"
         ]
+      },
+      "mealTypes": [
+        "dinner"
+      ],
+      "ingredients": [
+        {
+          "name": "Ground beef",
+          "certainty": "confirmed",
+          "optional": false,
+          "component": "Main"
+        },
+        {
+          "name": "Peppers",
+          "certainty": "confirmed",
+          "optional": false,
+          "component": "Main",
+          "notes": "Type of pepper not specified."
+        },
+        {
+          "name": "Onion",
+          "certainty": "confirmed",
+          "optional": false,
+          "component": "Main"
+        },
+        {
+          "name": "Soft tortillas",
+          "certainty": "confirmed",
+          "optional": false,
+          "component": "Main",
+          "notes": "Size and corn vs flour not specified."
+        },
+        {
+          "name": "Olive oil",
+          "certainty": "draft",
+          "optional": false,
+          "component": "Cooking fat"
+        },
+        {
+          "name": "Chili powder",
+          "certainty": "draft",
+          "optional": false,
+          "component": "Taco seasoning"
+        },
+        {
+          "name": "Cumin",
+          "certainty": "draft",
+          "optional": false,
+          "component": "Taco seasoning"
+        },
+        {
+          "name": "Paprika",
+          "certainty": "draft",
+          "optional": false,
+          "component": "Taco seasoning"
+        },
+        {
+          "name": "Garlic powder",
+          "certainty": "draft",
+          "optional": false,
+          "component": "Taco seasoning"
+        },
+        {
+          "name": "Salt",
+          "certainty": "draft",
+          "optional": false,
+          "component": "Seasoning"
+        },
+        {
+          "name": "Shredded cheese",
+          "certainty": "draft",
+          "optional": true,
+          "component": "Toppings"
+        },
+        {
+          "name": "Salsa",
+          "certainty": "draft",
+          "optional": true,
+          "component": "Toppings"
+        },
+        {
+          "name": "Sour cream",
+          "certainty": "draft",
+          "optional": true,
+          "component": "Toppings"
+        }
+      ],
+      "ingredientReview": {
+        "status": "needs-audit",
+        "notes": [
+          "Calvin requested a later audit. Confirm draft ingredients, quantities, servings, optional additions, and sauce/seasoning choices before treating this as a final recipe or ordering groceries.",
+          "Confirm premixed seasoning vs the drafted individual spices; do not buy both as separate requirements."
+        ]
       }
     },
     {
@@ -1487,6 +1998,92 @@
           "Chicken",
           "Stovetop-fried peppers and onions",
           "Soft-shell tortillas"
+        ]
+      },
+      "mealTypes": [
+        "dinner"
+      ],
+      "ingredients": [
+        {
+          "name": "Chicken",
+          "certainty": "confirmed",
+          "optional": false,
+          "component": "Main"
+        },
+        {
+          "name": "Peppers",
+          "certainty": "confirmed",
+          "optional": false,
+          "component": "Main",
+          "notes": "Type of pepper not specified."
+        },
+        {
+          "name": "Onion",
+          "certainty": "confirmed",
+          "optional": false,
+          "component": "Main"
+        },
+        {
+          "name": "Soft tortillas",
+          "certainty": "confirmed",
+          "optional": false,
+          "component": "Main",
+          "notes": "Same serving style as Zoe's beef tacos; tortilla type/size needs review."
+        },
+        {
+          "name": "Olive oil",
+          "certainty": "draft",
+          "optional": false,
+          "component": "Cooking fat"
+        },
+        {
+          "name": "Chili powder",
+          "certainty": "draft",
+          "optional": false,
+          "component": "Fajita seasoning"
+        },
+        {
+          "name": "Cumin",
+          "certainty": "draft",
+          "optional": false,
+          "component": "Fajita seasoning"
+        },
+        {
+          "name": "Paprika",
+          "certainty": "draft",
+          "optional": false,
+          "component": "Fajita seasoning"
+        },
+        {
+          "name": "Garlic powder",
+          "certainty": "draft",
+          "optional": false,
+          "component": "Fajita seasoning"
+        },
+        {
+          "name": "Lime juice",
+          "certainty": "draft",
+          "optional": true,
+          "component": "Fajita seasoning"
+        },
+        {
+          "name": "Salt",
+          "certainty": "draft",
+          "optional": false,
+          "component": "Seasoning"
+        },
+        {
+          "name": "Black pepper",
+          "certainty": "draft",
+          "optional": false,
+          "component": "Seasoning"
+        }
+      ],
+      "ingredientReview": {
+        "status": "needs-audit",
+        "notes": [
+          "Calvin requested a later audit. Confirm draft ingredients, quantities, servings, optional additions, and sauce/seasoning choices before treating this as a final recipe or ordering groceries.",
+          "Confirm premixed seasoning vs the drafted individual spices; do not buy both as separate requirements."
         ]
       }
     },
@@ -1513,6 +2110,301 @@
           "Chicken",
           "Pesto",
           "Pasta"
+        ]
+      },
+      "mealTypes": [
+        "dinner"
+      ],
+      "ingredients": [
+        {
+          "name": "Chicken",
+          "certainty": "confirmed",
+          "optional": false,
+          "component": "Main"
+        },
+        {
+          "name": "Pasta",
+          "certainty": "confirmed",
+          "optional": false,
+          "component": "Main",
+          "notes": "Pasta shape/type not specified."
+        },
+        {
+          "name": "Pesto",
+          "certainty": "confirmed",
+          "optional": false,
+          "component": "Main",
+          "notes": "Confirm purchased vs homemade before expanding into pesto ingredients."
+        },
+        {
+          "name": "Olive oil",
+          "certainty": "draft",
+          "optional": false,
+          "component": "Cooking fat"
+        },
+        {
+          "name": "Garlic",
+          "certainty": "draft",
+          "optional": true,
+          "component": "Main"
+        },
+        {
+          "name": "Parmesan",
+          "certainty": "draft",
+          "optional": true,
+          "component": "Main"
+        },
+        {
+          "name": "Cherry tomatoes",
+          "certainty": "draft",
+          "optional": true,
+          "component": "Main"
+        },
+        {
+          "name": "Heavy cream",
+          "certainty": "draft",
+          "optional": true,
+          "component": "Main",
+          "notes": "Only a draft variant; do not assume Zoe makes a creamy pesto pasta."
+        },
+        {
+          "name": "Salt",
+          "certainty": "draft",
+          "optional": false,
+          "component": "Seasoning"
+        },
+        {
+          "name": "Black pepper",
+          "certainty": "draft",
+          "optional": false,
+          "component": "Seasoning"
+        }
+      ],
+      "ingredientReview": {
+        "status": "needs-audit",
+        "notes": [
+          "Calvin requested a later audit. Confirm draft ingredients, quantities, servings, optional additions, and sauce/seasoning choices before treating this as a final recipe or ordering groceries."
+        ]
+      }
+    },
+    {
+      "id": "overnight-oats",
+      "kind": "meal",
+      "status": "cooked",
+      "title": "Overnight Oats",
+      "description": "Overnight oats Calvin prepares for himself; flavor style and exact recipe still need review.",
+      "tags": [
+        "oats",
+        "breakfast"
+      ],
+      "source": {
+        "type": "user-chat",
+        "reference": "Calvin: breakfast and ingredient-audit discussion, 2026-10-22",
+        "notes": "Household meal and preparer reported by Calvin. Ingredient suggestions are individually marked draft until audited."
+      },
+      "notes": [
+        "Calvin prepares these for himself. Flavor style and quantities remain unconfirmed."
+      ],
+      "preparedBy": "Calvin",
+      "meal": {
+        "components": [
+          "Overnight oats"
+        ]
+      },
+      "mealTypes": [
+        "breakfast"
+      ],
+      "ingredients": [
+        {
+          "name": "Oats",
+          "certainty": "confirmed",
+          "optional": false,
+          "component": "Main",
+          "notes": "Confirm oat type; no quantities supplied."
+        },
+        {
+          "name": "Milk",
+          "certainty": "draft",
+          "optional": false,
+          "component": "Main",
+          "notes": "Liquid and milk type need review."
+        },
+        {
+          "name": "Greek yogurt",
+          "certainty": "draft",
+          "optional": true,
+          "component": "Main"
+        },
+        {
+          "name": "Chia seeds",
+          "certainty": "draft",
+          "optional": true,
+          "component": "Main"
+        },
+        {
+          "name": "Salt",
+          "certainty": "draft",
+          "optional": true,
+          "component": "Main"
+        }
+      ],
+      "ingredientReview": {
+        "status": "needs-audit",
+        "notes": [
+          "Calvin requested a later audit. Confirm draft ingredients, quantities, servings, optional additions, and sauce/seasoning choices before treating this as a final recipe or ordering groceries.",
+          "Confirm sweet vs savory flavor style and toppings; none is assumed."
+        ]
+      }
+    },
+    {
+      "id": "egg-taquitos",
+      "kind": "meal",
+      "status": "cooked",
+      "title": "Egg Taquitos",
+      "description": "Egg taquitos prepared by Zoe, sometimes with bacon and sometimes without.",
+      "tags": [
+        "eggs",
+        "breakfast"
+      ],
+      "source": {
+        "type": "user-chat",
+        "reference": "Calvin: breakfast and ingredient-audit discussion, 2026-10-22",
+        "notes": "Household meal and preparer reported by Calvin. Ingredient suggestions are individually marked draft until audited."
+      },
+      "notes": [],
+      "preparedBy": "Zoe",
+      "meal": {
+        "components": [
+          "Egg taquitos",
+          "Optional bacon"
+        ]
+      },
+      "mealTypes": [
+        "breakfast"
+      ],
+      "ingredients": [
+        {
+          "name": "Eggs",
+          "certainty": "confirmed",
+          "optional": false,
+          "component": "Main"
+        },
+        {
+          "name": "Tortillas",
+          "certainty": "draft",
+          "optional": false,
+          "component": "Main",
+          "notes": "Taquito wrapper type and size have not been supplied."
+        },
+        {
+          "name": "Bacon",
+          "certainty": "confirmed",
+          "optional": true,
+          "component": "Main",
+          "notes": "Calvin explicitly said Zoe makes these with or without bacon."
+        },
+        {
+          "name": "Shredded cheese",
+          "certainty": "draft",
+          "optional": true,
+          "component": "Main"
+        },
+        {
+          "name": "Butter",
+          "certainty": "draft",
+          "optional": true,
+          "component": "Cooking fat",
+          "notes": "Confirm the fat used to cook the eggs, if any."
+        },
+        {
+          "name": "Salt",
+          "certainty": "draft",
+          "optional": false,
+          "component": "Seasoning"
+        },
+        {
+          "name": "Black pepper",
+          "certainty": "draft",
+          "optional": false,
+          "component": "Seasoning"
+        }
+      ],
+      "ingredientReview": {
+        "status": "needs-audit",
+        "notes": [
+          "Calvin requested a later audit. Confirm draft ingredients, quantities, servings, optional additions, and sauce/seasoning choices before treating this as a final recipe or ordering groceries."
+        ]
+      }
+    },
+    {
+      "id": "caesar-salad",
+      "kind": "meal",
+      "status": "cooked",
+      "title": "Caesar Salad",
+      "description": "Zoe's Caesar salad uses romaine. Other ingredients below are drafts for Calvin to audit.",
+      "tags": [
+        "salad",
+        "caesar"
+      ],
+      "source": {
+        "type": "user-chat",
+        "reference": "Calvin: breakfast and ingredient-audit discussion, 2026-10-22",
+        "notes": "Household meal and preparer reported by Calvin. Ingredient suggestions are individually marked draft until audited."
+      },
+      "notes": [],
+      "preparedBy": "Zoe",
+      "meal": {
+        "components": [
+          "Romaine-based Caesar salad"
+        ]
+      },
+      "mealTypes": [
+        "dinner"
+      ],
+      "ingredients": [
+        {
+          "name": "Romaine",
+          "certainty": "confirmed",
+          "optional": false,
+          "component": "Main"
+        },
+        {
+          "name": "Parmesan",
+          "certainty": "draft",
+          "optional": false,
+          "component": "Main"
+        },
+        {
+          "name": "Croutons",
+          "certainty": "draft",
+          "optional": false,
+          "component": "Main"
+        },
+        {
+          "name": "Caesar dressing",
+          "certainty": "draft",
+          "optional": false,
+          "component": "Dressing",
+          "notes": "Draft ready-made dressing placeholder. Confirm purchased vs homemade; do not also buy homemade dressing ingredients by default."
+        },
+        {
+          "name": "Lemon juice",
+          "certainty": "draft",
+          "optional": true,
+          "component": "Main"
+        },
+        {
+          "name": "Black pepper",
+          "certainty": "draft",
+          "optional": false,
+          "component": "Seasoning"
+        }
+      ],
+      "ingredientReview": {
+        "status": "needs-audit",
+        "notes": [
+          "Calvin requested a later audit. Confirm draft ingredients, quantities, servings, optional additions, and sauce/seasoning choices before treating this as a final recipe or ordering groceries.",
+          "Confirm whether served as a side or main and whether dressing is purchased or homemade. Filed with supper meals for now."
         ]
       }
     }
@@ -1553,7 +2445,10 @@
         "beef-stroganoff",
         "white-mom-tacos",
         "chicken-fajitas",
-        "chicken-pesto-pasta"
+        "chicken-pesto-pasta",
+        "overnight-oats",
+        "egg-taquitos",
+        "caesar-salad"
       ]
     }
   ]

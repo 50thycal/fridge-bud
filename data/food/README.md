@@ -6,9 +6,25 @@ This is the shared food reference for Calvin and ChatGPT: complete recipes, flex
 
 ## Active list: Meals V2
 
-`activeCollectionId: "meals-v2"` identifies the household list to use by default in conversation and on `/food`. Its eight `entryIds` are ordered: four Calvin-prepared meals, then four Zoe-prepared meals. When Calvin says "edit a meal", use this active list. The original 17-entry collection remains available as **Original Meals (reference)**; only Mediterranean Chicken Salad is included in both lists. No defaults were deleted.
+`activeCollectionId: "meals-v2"` identifies the household list to use by default in conversation and on `/food`. Its `entryIds` contain the household supper meals plus breakfast additions. `mealTypes` identifies breakfast, lunch, dinner (shown as supper), or snack; `preparedBy` identifies the cook. When Calvin says "edit a meal", use this active list. The original 17-entry collection remains available as **Original Meals (reference)**; only Mediterranean Chicken Salad is included in both lists. No defaults were deleted.
 
 Calvin supplied the V2 list on 2026-10-22. A named meal can be a known household meal without a full written recipe. `preparedBy` records Calvin or Zoe, and `meal.components` stores only what he supplied. Do not infer recipes, effort, timing, ratings, or a meal calendar from this list.
+
+## Ingredient drafts and audit
+
+On 2026-10-22 Calvin added **Overnight Oats** (Calvin, breakfast), **Egg Taquitos** (Zoe, breakfast; bacon optional), and **Caesar Salad** (Zoe, supper for now). The active list now contains 11 meals: 2 breakfasts and 9 supper meals. No calendar or future-planning feature was added.
+
+Calvin asked for sensible ingredient drafts and a later audit. Every active meal has an `ingredients` list and `ingredientReview`:
+
+- `ingredients`: objects with `name`, `component`, `certainty` (`confirmed` or `draft`), `optional` (boolean), and optional `notes`. Names/components identify what the entry is, while notes capture ambiguity and variants. Quantities have not yet been supplied.
+- `ingredientReview`: `status` (`needs-audit` or `approved`) and `notes` (string array). All current V2 ingredient lists need Calvin's audit. Draft suggestions may not be presented as his actual recipe; approval requires resolving each draft ingredient first.
+- `mealTypes`: meal categories (`breakfast`, `lunch`, `dinner`, `snack`). The original eight household meals are supper meals. Caesar Salad is provisionally filed with supper; confirm side/main use during audit.
+
+Confirmed greens: **kale** for Mediterranean Chicken Salad and **romaine** for Caesar Salad. **Arugula** was named alongside an unclear transcribed salad name; its association with Chicken Caprese Salad is a draft interpretation requiring review. Optional bacon is explicitly confirmed for Egg Taquitos.
+
+The older Mediterranean pattern remains for matching compatibility, with its greens corrected to kale. Its remaining template alternatives and component recipes are historical reference, not approved household ingredients. `/food` displays the explicit audited/draft ingredient list when present, rather than the legacy alternatives.
+
+Sauces and seasonings need variant decisions: do not require both purchased pesto/tzatziki/dressing and their homemade subingredients, or both a seasoning mix and its individual spices. Ingredient review does not create inventory, a meal plan, or a grocery order. A future planner must account for these decisions and servings/quantities before generating purchase amounts.
 
 ## What has been recovered
 

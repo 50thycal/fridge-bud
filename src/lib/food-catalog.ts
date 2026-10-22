@@ -1,5 +1,5 @@
 import catalog from '../../data/food/catalog.json';
-import type { MealPattern } from './types';
+import type { MealPattern, MealType } from './types';
 
 export interface FoodEntry {
   id: string;
@@ -15,6 +15,18 @@ export interface FoodEntry {
   };
   notes: string[];
   preparedBy?: 'Calvin' | 'Zoe';
+  mealTypes?: MealType[];
+  ingredients?: {
+    name: string;
+    certainty: 'confirmed' | 'draft';
+    optional: boolean;
+    component: string;
+    notes?: string;
+  }[];
+  ingredientReview?: {
+    status: 'needs-audit' | 'approved';
+    notes: string[];
+  };
   meal?: { components: string[] };
   recipe?: {
     servings?: string;
