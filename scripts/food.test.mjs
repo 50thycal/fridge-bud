@@ -109,13 +109,13 @@ test('auto-merge refuses other authors, forks, drafts, code changes, deletion, c
 });
 
 
-test('Meals V2 is the active eight-meal household list and preserves the original reference collection', () => {
+test('Meals V2 is the active household list and preserves the original reference collection', () => {
   assert.equal(catalog.activeCollectionId, 'meals-v2');
   const active = catalog.collections.find(list => list.id === catalog.activeCollectionId);
   assert.equal(active.title, 'Meals V2');
-  assert.equal(active.entryIds.length, 8);
+  assert.equal(active.entryIds.length, 11);
   const meals = active.entryIds.map(id => catalog.entries.find(entry => entry.id === id));
-  assert.deepEqual(meals.map(meal => meal.preparedBy), ['Calvin','Calvin','Calvin','Calvin','Zoe','Zoe','Zoe','Zoe']);
+  assert.deepEqual(meals.map(meal => meal.preparedBy), ['Calvin','Calvin','Calvin','Calvin','Zoe','Zoe','Zoe','Zoe','Calvin','Zoe','Zoe']);
   const original = catalog.collections.find(list => list.id === 'original-meals');
   assert.equal(original.entryIds.length, 17);
   assert.deepEqual(active.entryIds.filter(id => original.entryIds.includes(id)), ['mediterranean-chicken-salad']);
@@ -129,4 +129,29 @@ test('Meals V2 is the active eight-meal household list and preserves the origina
     const invalid = clone(catalog); mutate(invalid);
     assert.throws(() => validateCatalog(invalid));
   }
+});
+
+
+test('household ingredients retain explicit greens, breakfast variants, and pending audit without approving suggestions', () => {
+  const active = catalog.collections.find(list => list.id === catalog.activeCollectionId);
+  const meals = active.entryIds.map(id => catalog.entries.find(entry => entry.id === id));
+  assert.equal(meals.filter(meal => meal.mealTypes.includes('breakfast')).length, 2);
+  assert.equal(meals.filter(meal => meal.mealTypes.includes('dinner')).length, 9);
+  assert(meals.every(meal => meal.ingredientReview.status === 'needs-audit'));
+  const meal = id => meals.find(meal => meal.id === id);
+  const item = (id, name) => meal(id).ingredients.find(ingredient => ingredient.name === name);
+  assert.equal(item('mediterranean-chicken-salad','Kale').certainty,'confirmed');
+  assert.deepEqual(meal('mediterranean-chicken-salad').pattern.requiredSlots.find(slot => slot.role === 'greens').specificItems,['Kale']);
+  assert.equal(item('caesar-salad','Romaine').certainty,'confirmed');
+  assert.equal(item('chicken-caprese-salad','Arugula').certainty,'draft');
+  assert.equal(item('egg-taquitos','Bacon').optional,true);
+  assert.equal(item('egg-taquitos','Bacon').certainty,'confirmed');
+  assert.equal(item('salmon-broccoli-creamy-dill','Greek yogurt').certainty,'draft');
+  assert(meals.every(meal => meal.ingredients.some(ingredient => ingredient.certainty === 'draft')));
+  for (const mutate of [
+    c => c.entries.find(e => e.id === 'overnight-oats').mealTypes = ['brunch'],
+    c => c.entries.find(e => e.id === 'overnight-oats').ingredients[0].certainty = 'probably',
+    c => c.entries.find(e => e.id === 'overnight-oats').ingredientReview.status = 'approved',
+    c => delete c.entries.find(e => e.id === 'overnight-oats').ingredientReview,
+  ]) { const invalid=clone(catalog); mutate(invalid); assert.throws(() => validateCatalog(invalid)); }
 });

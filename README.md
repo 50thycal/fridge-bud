@@ -6,7 +6,7 @@ A household food app and shared reference for recipes, meal ideas, and flexible 
 
 **[Read the food catalog](data/food/catalog.json)** · **[Format, recovery, and PR workflow](data/food/README.md)**
 
-**Meals V2** is the active household list: four meals prepared by Calvin and four by Zoe. The original defaults remain available as a separate reference list.
+**Meals V2** is the active household list, with supper and breakfast categories and the preparer recorded for each meal. Ingredient lists distinguish confirmed details from draft suggestions and flag Calvin's pending audit. The original defaults remain available as a separate reference list.
 
 The catalog on `main` is the source of truth for food conversations across ChatGPT sessions with GitHub access. It records recipe ingredients/instructions, food ideas, and meal patterns with provenance and notes. Read it fresh before discussing saved food. Requested food updates go through validated PRs; eligible catalog-only PRs from `50thycal` merge automatically. See [AGENTS.md](AGENTS.md) for session instructions.
 

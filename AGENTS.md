@@ -8,6 +8,7 @@ Calvin wants this repository to be the shared source for food conversations acro
 - **Meals V2 is the active household list.** Resolve `activeCollectionId` and that collection's `entryIds` in the catalog when Calvin asks about "my meals", "our meals", or to edit a meal. Do not include the original defaults unless he asks for them. Preserve other collections as reference. Record the named preparer; do not assume both people cook every meal.
 - Read current files instead of relying on chat memory. A previous conversation or unmerged PR is not the committed source of truth.
 - Catalog entries distinguish complete recipes, known household meals, flexible meal patterns, and food ideas. Built-in app templates are not evidence that Calvin saved, cooked, or liked them.
+- Ingredient drafts have per-item `certainty` (`confirmed` or `draft`) and `ingredientReview.status`. Calvin requested a later audit: surface the pending review and never treat draft suggestions as his approved recipe or silently use them to order groceries. Review optional ingredients, sauce bases, quantities, and ambiguous speech before approval. Use root `mealTypes` for household categories.
 - Keep unknown quantities, instructions, sources, ratings, and preferences unknown. Do not turn an idea into a tested recipe by inference.
 
 ## Requested food updates

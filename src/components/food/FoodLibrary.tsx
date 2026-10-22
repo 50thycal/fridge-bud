@@ -7,6 +7,7 @@ import type { IngredientSlot } from '@/lib/types';
 import { exportMealPatterns } from '@/lib/storage';
 
 const catalogUrl = 'https://github.com/50thycal/fridge-bud/blob/main/data/food/catalog.json';
+const categoryLabels = { breakfast: 'Breakfast', lunch: 'Lunch', dinner: 'Supper', snack: 'Snack' };
 
 function SlotGroup({ title, slots }: { title: string; slots: IngredientSlot[] }) {
   return <div><h3 className="font-semibold">{title}</h3><p className="text-zinc-300">{slots.map(slot => `${slot.role}: ${(slot.specificItems ?? slot.acceptedCategories ?? []).join(' / ')}`).join('; ') || 'None recorded'}</p></div>;
@@ -19,10 +20,12 @@ export function FoodLibrary({ catalog }: { catalog: FoodCatalog }) {
   const listEntries = collection ? collection.entryIds.flatMap(id => entries.find(entry => entry.id === id) ?? []) : entries;
   const [query, setQuery] = useState('');
   const [kind, setKind] = useState('all');
+  const [category, setCategory] = useState('all');
   const [message, setMessage] = useState('');
   const visible = listEntries.filter(entry =>
     (kind === 'all' || entry.kind === kind) &&
-    JSON.stringify([entry.title, entry.description, entry.tags, entry.notes, entry.preparedBy, entry.meal, entry.recipe, entry.pattern]).toLowerCase().includes(query.toLowerCase())
+    (category === 'all' || (entry.mealTypes ?? entry.pattern?.mealTypes ?? []).some(type => type === category)) &&
+    JSON.stringify([entry.title, entry.description, entry.tags, entry.notes, entry.preparedBy, entry.ingredients, entry.meal, entry.recipe, entry.pattern]).toLowerCase().includes(query.toLowerCase())
   );
 
   function exportLocalMeals() {
@@ -69,6 +72,11 @@ export function FoodLibrary({ catalog }: { catalog: FoodCatalog }) {
         </>}
         <label htmlFor="food-search" className="block font-medium">Find food</label>
         <input id="food-search" value={query} onChange={event => setQuery(event.target.value)} placeholder="Search names, ingredients, or tags" className="min-h-11 w-full rounded-xl bg-zinc-900 border border-zinc-700 px-4 py-3" />
+        <label htmlFor="meal-category" className="block font-medium">Meal category</label>
+        <select id="meal-category" value={category} onChange={event => setCategory(event.target.value)} className="min-h-11 w-full rounded-xl bg-zinc-900 border border-zinc-700 px-4 py-3">
+          <option value="all">All categories</option>
+          {Object.entries(categoryLabels).map(([value, label]) => <option key={value} value={value}>{label}</option>)}
+        </select>
         <label htmlFor="food-kind" className="block font-medium">Show</label>
         <select id="food-kind" value={kind} onChange={event => setKind(event.target.value)} className="min-h-11 w-full rounded-xl bg-zinc-900 border border-zinc-700 px-4 py-3">
           <option value="all">Everything</option>
@@ -86,9 +94,22 @@ export function FoodLibrary({ catalog }: { catalog: FoodCatalog }) {
           <p className="text-sm capitalize text-green-400">{entry.kind} · {entry.status}</p>
           <h2 className="text-2xl font-semibold">{entry.title}</h2>
           {entry.preparedBy && <p className="text-green-300">Prepared by {entry.preparedBy}</p>}
+          <p className="text-sm text-zinc-400">{(entry.mealTypes ?? entry.pattern?.mealTypes ?? []).map(type => categoryLabels[type]).join(' · ')}</p>
           <p className="text-zinc-300">{entry.description}</p>
           {entry.meal && <p className="text-sm text-zinc-400">Known household meal. Full recipe details have not yet been recorded.</p>}
           <p className="text-sm text-zinc-400">{entry.tags.join(' · ')}</p>
+          {entry.ingredientReview && <section className="rounded-xl border border-amber-800 p-3 space-y-2" aria-label="Ingredient review">
+            <h3 className="font-semibold text-amber-300">{entry.ingredientReview.status === 'needs-audit' ? 'Calvin needs to review these ingredients' : 'Ingredients reviewed'}</h3>
+            {entry.ingredientReview.notes.map((note, index) => <p key={index} className="text-sm text-zinc-300">{note}</p>)}
+          </section>}
+          {entry.ingredients && <>
+            <h3 className="font-semibold">Ingredient list</h3>
+            <ul className="space-y-3">{entry.ingredients.map((ingredient, index) => <li key={index} className="border-b border-zinc-800 pb-2">
+              <p>{ingredient.name}{ingredient.optional ? ' (optional)' : ''} <span className={ingredient.certainty === 'draft' ? 'text-amber-300 text-sm' : 'text-green-300 text-sm'}>{ingredient.certainty === 'draft' ? '— Draft suggestion' : '— Confirmed'}</span></p>
+              <p className="text-xs text-zinc-400">{ingredient.component}</p>
+              {ingredient.notes && <p className="text-sm text-zinc-400">{ingredient.notes}</p>}
+            </li>)}</ul>
+          </>}
           {entry.recipe && <>
             {entry.recipe.servings && <p>Servings: {entry.recipe.servings}</p>}
             <h3 className="font-semibold">Ingredients</h3>
@@ -96,7 +117,7 @@ export function FoodLibrary({ catalog }: { catalog: FoodCatalog }) {
             <h3 className="font-semibold">Method</h3>
             <ol className="list-decimal pl-6 space-y-2">{entry.recipe.steps.map((step, index) => <li key={index}>{step}</li>)}</ol>
           </>}
-          {entry.pattern && <>
+          {entry.pattern && !entry.ingredients && <>
             <h3 className="font-semibold">Required ingredients</h3>
             <ul className="list-disc pl-6 space-y-1">{entry.pattern.requiredSlots.map(slot => <li key={slot.role}>{slot.role}: {(slot.specificItems ?? slot.acceptedCategories ?? []).join(' / ')}</li>)}</ul>
             <SlotGroup title="Flexible ingredients" slots={entry.pattern.flexibleSlots} />

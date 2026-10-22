@@ -45,12 +45,32 @@ export function validateCatalog(catalog) {
   const ids = new Set();
   for (const entry of catalog.entries) {
     assert(object(entry), 'Invalid entry');
-    keys(entry, ['id','kind','status','title','description','tags','source','notes','recipe','pattern','preparedBy','meal']);
+    keys(entry, ['id','kind','status','title','description','tags','source','notes','recipe','pattern','preparedBy','meal','mealTypes','ingredients','ingredientReview']);
     assert(text(entry.id) && /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(entry.id), 'Use a stable kebab-case ID');
     assert(!ids.has(entry.id), `Duplicate ID: ${entry.id}`); ids.add(entry.id);
     assert(text(entry.title) && typeof entry.description === 'string', 'Missing title/description');
     assert(oneOf(entry.kind, ['pattern','recipe','idea','meal']), 'Invalid entry kind');
     assert(entry.preparedBy === undefined || oneOf(entry.preparedBy, ['Calvin','Zoe']), 'Invalid meal preparer');
+    if (entry.mealTypes !== undefined) {
+      assert(strings(entry.mealTypes) && entry.mealTypes.length > 0 && new Set(entry.mealTypes).size === entry.mealTypes.length && entry.mealTypes.every(type => oneOf(type, ['breakfast','lunch','dinner','snack'])), 'Invalid meal categories');
+    }
+    if (entry.ingredients !== undefined) {
+      assert(Array.isArray(entry.ingredients) && entry.ingredients.length > 0, 'Ingredient list cannot be empty');
+      for (const ingredient of entry.ingredients) {
+        assert(object(ingredient), 'Invalid ingredient');
+        keys(ingredient, ['name','certainty','optional','component','notes']);
+        assert(text(ingredient.name) && text(ingredient.component) && oneOf(ingredient.certainty, ['confirmed','draft']) && typeof ingredient.optional === 'boolean', 'Invalid ingredient certainty or details');
+        assert(ingredient.notes === undefined || text(ingredient.notes), 'Invalid ingredient notes');
+      }
+      assert(object(entry.ingredientReview), 'Ingredients require an explicit audit status');
+    }
+    if (entry.ingredientReview !== undefined) {
+      assert(object(entry.ingredientReview), 'Invalid ingredient review');
+      keys(entry.ingredientReview, ['status','notes']);
+      assert(oneOf(entry.ingredientReview.status, ['needs-audit','approved']) && strings(entry.ingredientReview.notes), 'Invalid ingredient review status');
+      assert(entry.ingredients !== undefined, 'Ingredient review requires an ingredient list');
+      if (entry.ingredientReview.status === 'approved') assert(entry.ingredients.every(item => item.certainty === 'confirmed'), 'Draft ingredients cannot be marked approved');
+    }
     assert(entry.kind === 'meal' || entry.meal === undefined, 'Meal components belong to meal entries');
     assert(oneOf(entry.status, ['saved','idea','cooked','favorite','archived']), 'Invalid status');
     assert(strings(entry.tags) && strings(entry.notes), 'Tags and notes must be string arrays');
