@@ -44,6 +44,9 @@ export default function HomePage() {
 
       {/* Content */}
       <div className="p-4 space-y-6">
+        <Link href="/food" className="block rounded-xl border border-green-800 bg-green-950/30 p-4 text-green-300 font-semibold">
+          Our food catalog → Recipes, patterns &amp; ideas
+        </Link>
         {/* Quick Stats */}
         <div className="grid grid-cols-3 gap-3">
           <Link href="/inventory">

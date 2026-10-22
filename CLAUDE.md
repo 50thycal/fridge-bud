@@ -2,6 +2,10 @@
 
 > A domestic decision-offloading system that lives on your fridge
 
+## Shared food catalog (current scope)
+
+The repository now also owns recipes and food ideas. Read `AGENTS.md` and `data/food/README.md` first. `data/food/catalog.json` on main is authoritative for food conversations; `/food` displays it. Earlier statements below excluding recipe instructions or calling the iPad the sole source of truth describe the original inventory MVP. Recipes and food ideas are now in scope; inventory remains local/cloud household state. Local meal editor changes are drafts until saved through a catalog PR.
+
 ## What This Is
 
 FridgeBud is **not** a food tracking app. It's a household terminal that reduces cognitive overhead around meals. It answers the question: "What should we eat?" by understanding what you have, what you want, and what needs attention.
