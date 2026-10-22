@@ -6,7 +6,10 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "validate:food": "node scripts/validate-food.mjs",
+    "test:food": "node --test scripts/food.test.mjs",
+    "prebuild": "npm run validate:food"
   },
   "dependencies": {
     "@vercel/kv": "^3.0.0",

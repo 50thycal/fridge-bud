@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef } from 'react';
+import Link from 'next/link';
 import { useInventory } from '@/hooks/useInventory';
 import { useMeals } from '@/hooks/useMeals';
 import { useMealPatterns } from '@/hooks/useMealPatterns';
@@ -85,6 +86,10 @@ export default function MealsPage() {
 
       {/* Content */}
       <div className="p-4 space-y-6">
+        <Link href="/food" className="block rounded-xl border border-green-800 p-4 text-green-300">
+          Open our shared food catalog →
+          <span className="block text-sm text-zinc-400 mt-1">Edits below are local drafts. Export them from the catalog page to save them through GitHub.</span>
+        </Link>
         {viewMode === 'suggestions' ? (
           <SuggestionsView
             items={items}

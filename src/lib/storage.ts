@@ -466,19 +466,34 @@ export function addRecentItem(name: string): void {
 
 export function exportData(): string {
   const state = getState();
-  return JSON.stringify(state, null, 2);
+  return JSON.stringify({ ...state, mealPatterns: getMealPatterns() }, null, 2);
+}
+
+// Recipe recovery must not include household access codes or inventory.
+export function exportMealPatterns(): string {
+  return JSON.stringify({ schemaVersion: 1, mealPatterns: getMealPatterns() }, null, 2);
 }
 
 export function importData(jsonString: string): boolean {
   try {
-    const data = JSON.parse(jsonString) as HouseholdState;
+    const data = JSON.parse(jsonString) as HouseholdState & { mealPatterns?: MealPattern[] };
 
     // Basic validation
     if (!Array.isArray(data.inventory)) return false;
     if (!Array.isArray(data.groceryList)) return false;
     if (!Array.isArray(data.mealLog)) return false;
+    if (data.mealPatterns !== undefined && (!Array.isArray(data.mealPatterns) ||
+      !data.mealPatterns.every(pattern => pattern && typeof pattern.id === 'string' &&
+        typeof pattern.name === 'string' && Array.isArray(pattern.requiredSlots) &&
+        Array.isArray(pattern.flexibleSlots) && Array.isArray(pattern.optionalUpgrades) &&
+        Array.isArray(pattern.tags) && Array.isArray(pattern.mealTypes)))) return false;
 
-    saveState(data);
+    const { mealPatterns, ...state } = data;
+    if (mealPatterns !== undefined) {
+      saveMealPatterns(mealPatterns);
+      markPatternsInitialized();
+    }
+    saveState(state);
     return true;
   } catch {
     return false;
