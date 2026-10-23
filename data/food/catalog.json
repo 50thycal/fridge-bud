@@ -2192,7 +2192,7 @@
       "kind": "meal",
       "status": "cooked",
       "title": "Overnight Oats",
-      "description": "Calvin's rolled overnight oats with milk, flax/chia seed mix, matcha, mushroom/superfood powder, and optional honey.",
+      "description": "One serving of Calvin's rolled overnight oats with milk, flax/chia seed mix, matcha, mushroom/superfood powder, and optional honey.",
       "tags": [
         "oats",
         "breakfast"
@@ -2204,7 +2204,8 @@
       },
       "notes": [
         "Calvin prepares these for himself. Flavor style and quantities remain unconfirmed.",
-        "2026-10-22 breakfast audit: Calvin supplied the ingredient list and amounts above. Preparation: combine everything together. Batch yield, milk type, exact mushroom powder, and honey amount were not supplied. Previous Greek yogurt, plain chia seeds, and salt suggestions were replaced by this user-described list; they were not confirmed ingredients."
+        "2026-10-22 breakfast audit: Calvin supplied the ingredient list and amounts above. Preparation: combine everything together. Batch yield, milk type, exact mushroom powder, and honey amount were not supplied. Previous Greek yogurt, plain chia seeds, and salt suggestions were replaced by this user-described list; they were not confirmed ingredients.",
+        "2026-10-22 follow-up: Calvin confirmed that the entire described oats batch makes 1 serving for himself. This resolves the earlier batch-yield uncertainty; ingredient amounts are per serving."
       ],
       "preparedBy": "Calvin",
       "meal": {
@@ -2226,35 +2227,35 @@
           "certainty": "confirmed",
           "optional": false,
           "component": "Main",
-          "notes": "About 2/3 cup per described batch. Milk type not specified."
+          "notes": "About 2/3 cup per serving. Milk type not specified."
         },
         {
           "name": "Rolled oats",
           "certainty": "confirmed",
           "optional": false,
           "component": "Main",
-          "notes": "1/2 cup per described batch."
+          "notes": "1/2 cup per serving."
         },
         {
           "name": "Flax/chia seed mix",
           "certainty": "confirmed",
           "optional": false,
           "component": "Main",
-          "notes": "1 tablespoon of the combined mix per described batch, not one tablespoon of each seed."
+          "notes": "1 tablespoon of the combined mix per serving, not one tablespoon of each seed."
         },
         {
           "name": "Matcha",
           "certainty": "confirmed",
           "optional": false,
           "component": "Main",
-          "notes": "Approximately 1 teaspoon per described batch."
+          "notes": "Approximately 1 teaspoon per serving."
         },
         {
           "name": "Mushroom/superfood powder (possibly Om)",
           "certainty": "draft",
           "optional": false,
           "component": "Main",
-          "notes": "1 tablespoon per described batch. Calvin recalled the name as \"Ohm\" or similar; exact brand and product/formula remain unverified."
+          "notes": "1 tablespoon per serving. Calvin recalled the name as \"Ohm\" or similar; exact brand and product/formula remain unverified."
         },
         {
           "name": "Honey",
@@ -2267,7 +2268,7 @@
       "ingredientReview": {
         "status": "needs-audit",
         "notes": [
-          "Ingredient list and supplied amounts reviewed with Calvin on 2026-10-22. Confirm the exact mushroom/superfood powder (possibly Om), batch yield/servings, milk type, and optional honey amount before precise inventory deduction. No additional preparation or chilling duration was supplied.",
+          "Ingredient list and supplied amounts reviewed with Calvin on 2026-10-22. Confirm the exact mushroom/superfood powder (possibly Om), milk type, and optional honey amount before precise inventory deduction. No additional preparation or chilling duration was supplied.",
           "Continue the audit in small chunks, one or two meals per exchange."
         ]
       }
